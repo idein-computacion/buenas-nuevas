@@ -1,0 +1,108 @@
+{
+  "verse": {
+    "text": "Porque de tal manera amó Dios al mundo, que ha dado a su Hijo unigénito, para que todo aquel que en él cree, no se pierda, mas tenga vida eterna.",
+    "reference": "Juan 3:16"
+  },
+  "events": [
+    {
+      "id": "event-1",
+      "title": "Retiro de Jóvenes 2026",
+      "date": "2026-08-14",
+      "time": "18:00 hs",
+      "description": "Un fin de semana especial de comunión, alabanza y búsqueda de Dios en Panambí. ¡Inscribite ya!",
+      "category": "Jóvenes"
+    },
+    {
+      "id": "event-2",
+      "title": "Campaña Solidaria de Invierno",
+      "date": "2026-07-25",
+      "time": "09:00 hs",
+      "description": "Recolección de ropa de abrigo y alimentos no perecederos para las familias del barrio Yerbal.",
+      "category": "Social"
+    },
+    {
+      "id": "event-3",
+      "title": "Almuerzo Familiar de Confraternidad",
+      "date": "2026-08-02",
+      "time": "12:30 hs",
+      "description": "Compartimos un almuerzo especial todos juntos. Traer cubiertos y algo para compartir en la sobremesa.",
+      "category": "Comunidad"
+    }
+  ],
+  "sermons": [
+    {
+      "id": "sermon-1",
+      "title": "Caminando en Fe en Tiempos de Incertidumbre",
+      "preacher": "Pastor Daniel Canclini",
+      "date": "2026-07-12",
+      "videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "duration": "45 min"
+    },
+    {
+      "id": "sermon-2",
+      "title": "El Poder de la Gracia Transformadora",
+      "preacher": "Pastora Marta Gómez",
+      "date": "2026-07-05",
+      "videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "duration": "38 min"
+    },
+    {
+      "id": "sermon-3",
+      "title": "Restaurando la Familia en el Altar de Dios",
+      "preacher": "Pastor Daniel Canclini",
+      "date": "2026-06-28",
+      "videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "duration": "50 min"
+    }
+  ],
+  "podcasts": [
+    {
+      "id": "podcast-1",
+      "title": "Reflexiones Diarias: La Paz de Dios",
+      "speaker": "Pastor Daniel Canclini",
+      "date": "2026-07-13",
+      "audioUrl": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+      "duration": "12 min"
+    },
+    {
+      "id": "podcast-2",
+      "title": "Conversaciones de Fe: El Perdón",
+      "speaker": "Coordinador Lucas Silva",
+      "date": "2026-07-06",
+      "audioUrl": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+      "duration": "18 min"
+    }
+  ],
+  "studies": [
+    {
+      "id": "study-1",
+      "title": "Introducción al Estudio de Romanos",
+      "author": "Pastor Daniel Canclini",
+      "date": "2026-07-10",
+      "content": "Este estudio bíblico de 4 partes nos introduce a los temas principales de la epístola a los Romanos: la justificación por fe, la gracia redentora y nuestra vida de obediencia. Es ideal para células y grupos pequeños."
+    },
+    {
+      "id": "study-2",
+      "title": "Los Nombres de Dios y su Significado",
+      "author": "Líder de Educación Bíblica",
+      "date": "2026-06-20",
+      "content": "Un análisis profundo de los nombres hebreos de Dios en el Antiguo Testamento (Yahweh, El Shaddai, Adonai) y cómo revelan su carácter y cuidado por su pueblo."
+    }
+  ],
+  "gallery": [
+    "https://images.unsplash.com/photo-1519406596751-0a3ccc4937fe?w=800&q=80",
+    "https://images.unsplash.com/photo-1515162305285-0293e4767cc2?w=800&q=80",
+    "https://images.unsplash.com/photo-1490122417551-6ee9691429d0?w=800&q=80",
+    "/uploads/1784052791768-396436704-729451671_18326948689259853_1195708044839511382_n.jpg"
+  ],
+  "messages": [
+    {
+      "id": "msg-1784054465673",
+      "name": "Pedro",
+      "phone": "3754406435",
+      "message": "Pido oración por mi",
+      "date": "2026-07-14T18:41:05.673Z",
+      "read": false
+    }
+  ]
+}

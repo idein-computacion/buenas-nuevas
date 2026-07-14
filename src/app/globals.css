@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Open+Sans:wght@300;400;600;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  --color-crema: #0A0A0A;       /* Negro background */
+  --color-monte: #1C1C1C;       /* Gris1 cards */
+  --color-monte-dark: #111111;  /* Oscuro header/footer */
+  --color-tierra: #C8A84B;      /* Dorado primary */
+  --color-tierra-dark: #A68735;  /* Dorado dark */
+  --color-dorado: #E2C06A;      /* Dorado2 highlight */
+  --color-texto: #FFFFFF;       /* Blanco text */
+  --color-texto-muted: #B3B3B3; /* Blanco2 text (rgba 255,255,255,0.70) */
+}
+
+@theme inline {
+  --color-crema: var(--color-crema);
+  --color-monte: var(--color-monte);
+  --color-monte-dark: var(--color-monte-dark);
+  --color-tierra: var(--color-tierra);
+  --color-tierra-dark: var(--color-tierra-dark);
+  --color-dorado: var(--color-dorado);
+  --color-texto: var(--color-texto);
+  --color-texto-muted: var(--color-texto-muted);
+  --font-display: 'Playfair Display', serif;
+  --font-body: 'Open Sans', sans-serif;
+}
+
+body {
+  background: var(--color-crema);
+  color: var(--color-texto);
+  font-family: var(--font-body);
+}
+
+h1, h2, h3, .font-display {
+  font-family: var(--font-display);
+}
+
+/* Glassmorphism helpers matching cover template */
+.glass {
+  background: rgba(28, 28, 28, 0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(200, 168, 75, 0.15);
+}
+
+.glass-nav {
+  background: rgba(10, 10, 10, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(200, 168, 75, 0.18);
+}
+
+.glass-card {
+  background: rgba(28, 28, 28, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  border-color: rgba(200, 168, 75, 0.3);
+  transform: translateY(-2px);
+  background: rgba(42, 42, 42, 0.85); /* gris2 background */
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-monte-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-monte);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-tierra);
+}
