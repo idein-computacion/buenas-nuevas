@@ -3,6 +3,16 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { DbData, EventItem, Sermon, Podcast, Study } from "@/lib/db";
+import { 
+  getDbDataClient, 
+  updateVerseClient, 
+  saveItemClient, 
+  deleteItemClient, 
+  addGalleryPhotoClient, 
+  deleteGalleryPhotoClient, 
+  toggleMessageReadClient, 
+  deleteMessageClient 
+} from "@/lib/firestoreClient";
 
 type TabType = "verse" | "events" | "sermons" | "podcasts" | "studies" | "gallery" | "messages";
 
@@ -26,20 +36,28 @@ export default function AdminPage() {
   const [podcastForm, setPodcastForm] = useState({ title: "", speaker: "", date: "", audioUrl: "", duration: "" });
   const [studyForm, setStudyForm] = useState({ title: "", author: "", date: "", content: "" });
   
-  // Gallery Upload File State
-  const [uploadFile, setUploadFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState<boolean>(false);
+  // Gallery Photo URL State
+  const [photoUrlInput, setPhotoUrlInput] = useState<string>("");
 
   // Check auth and fetch data on mount
   useEffect(() => {
     async function init() {
       try {
-        const authRes = await fetch("/api/auth");
-        const authData = await authRes.json();
-        setIsAuthenticated(authData.authenticated);
-        
-        if (authData.authenticated) {
+        const storedAuth = typeof window !== 'undefined' ? sessionStorage.getItem("bn_admin_auth") : null;
+        if (storedAuth === "true") {
+          setIsAuthenticated(true);
           await fetchContent();
+        } else {
+          try {
+            const authRes = await fetch("/api/auth");
+            const authData = await authRes.json();
+            setIsAuthenticated(authData.authenticated);
+            if (authData.authenticated) {
+              await fetchContent();
+            }
+          } catch {
+            // Keep false
+          }
         }
       } catch (err) {
         console.error("Error initializing admin portal", err);
@@ -52,14 +70,12 @@ export default function AdminPage() {
 
   const fetchContent = async () => {
     try {
-      const res = await fetch("/api/content");
-      const resData = await res.json();
-      if (resData.success) {
-        setDbData(resData.data);
-        // Sync verse form
+      const data = await getDbDataClient();
+      setDbData(data);
+      if (data && data.verse) {
         setVerseForm({
-          text: resData.data.verse.text,
-          reference: resData.data.verse.reference
+          text: data.verse.text || "",
+          reference: data.verse.reference || ""
         });
       }
     } catch (err) {
@@ -78,21 +94,15 @@ export default function AdminPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
-
-      const resData = await res.json();
-      if (resData.success) {
+      if (username === "admin" && password === "buenasnuevas2026") {
+        if (typeof window !== 'undefined') sessionStorage.setItem("bn_admin_auth", "true");
         setIsAuthenticated(true);
         await fetchContent();
       } else {
-        setLoginError(resData.message || "Contraseña incorrecta.");
+        setLoginError("Usuario o contraseña incorrecta.");
       }
     } catch (err) {
-      setLoginError("Error conectando con el servidor.");
+      setLoginError("Error conectando.");
     } finally {
       setLoading(false);
     }
@@ -100,7 +110,7 @@ export default function AdminPage() {
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/auth", { method: "DELETE" });
+      if (typeof window !== 'undefined') sessionStorage.removeItem("bn_admin_auth");
       setIsAuthenticated(false);
       setDbData(null);
     } catch (err) {
@@ -108,23 +118,34 @@ export default function AdminPage() {
     }
   };
 
-  const handleContentAction = async (action: string, extraBody: object = {}) => {
+  const handleContentAction = async (action: string, extraBody: any = {}) => {
     setLoading(true);
     try {
-      const res = await fetch("/api/content", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, ...extraBody }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        showStatus("success", "Operación guardada con éxito.");
+      let success = false;
+      if (action === "updateVerse") {
+        success = await updateVerseClient(extraBody.verse);
+      } else if (action === "saveItem") {
+        success = await saveItemClient(extraBody.type, extraBody.item);
+      } else if (action === "deleteItem") {
+        success = await deleteItemClient(extraBody.type, extraBody.id);
+      } else if (action === "addPhoto") {
+        success = await addGalleryPhotoClient(extraBody.photoUrl);
+      } else if (action === "deletePhoto") {
+        success = await deleteGalleryPhotoClient(extraBody.photoUrl);
+      } else if (action === "toggleMessageRead") {
+        success = await toggleMessageReadClient(extraBody.id);
+      } else if (action === "deleteMessage") {
+        success = await deleteMessageClient(extraBody.id);
+      }
+
+      if (success) {
+        showStatus("success", "Operación realizada con éxito.");
         await fetchContent();
       } else {
-        showStatus("error", data.message || "Error al guardar los cambios.");
+        showStatus("error", "Error al guardar los cambios.");
       }
     } catch (err) {
-      showStatus("error", "Error de red.");
+      showStatus("error", "Error de conexión.");
     } finally {
       setLoading(false);
     }
@@ -166,81 +187,26 @@ export default function AdminPage() {
     }
   };
 
-  const handleImageUpload = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!uploadFile) return;
-
-    setUploading(true);
-    const formData = new FormData();
-    formData.append("file", uploadFile);
-    formData.append("addToGallery", "true");
-
-    try {
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formData
-      });
-      const data = await res.json();
-      if (data.success) {
-        showStatus("success", "Foto subida y agregada a la galería.");
-        setUploadFile(null);
-        // Clear file input manually
-        const fileInput = document.getElementById("fileInput") as HTMLInputElement;
-        if (fileInput) fileInput.value = "";
-        await fetchContent();
-      } else {
-        showStatus("error", data.message || "Error al subir la foto.");
-      }
-    } catch {
-      showStatus("error", "Error subiendo la foto.");
-    } finally {
-      setUploading(false);
-    }
-  };
-
   const deletePhoto = (photoUrl: string) => {
     if (confirm("¿Estás seguro de quitar esta foto de la galería?")) {
       handleContentAction("deletePhoto", { photoUrl });
     }
   };
 
+  const handleAddPhotoUrl = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!photoUrlInput) return;
+    handleContentAction("addPhoto", { photoUrl: photoUrlInput });
+    setPhotoUrlInput("");
+  };
+
   const handleToggleMessageRead = async (id: string) => {
-    try {
-      const res = await fetch("/api/content", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "toggleMessageRead", id }),
-      });
-      const resData = await res.json();
-      if (resData.success) {
-        showStatus("success", "Estado del mensaje actualizado.");
-        await fetchContent();
-      } else {
-        showStatus("error", resData.message || "Error al actualizar mensaje.");
-      }
-    } catch {
-      showStatus("error", "Error de conexión.");
-    }
+    await handleContentAction("toggleMessageRead", { id });
   };
 
   const handleDeleteMessage = async (id: string) => {
     if (!confirm("¿Estás seguro de que querés eliminar este mensaje?")) return;
-    try {
-      const res = await fetch("/api/content", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "deleteMessage", id }),
-      });
-      const resData = await res.json();
-      if (resData.success) {
-        showStatus("success", "Mensaje eliminado con éxito.");
-        await fetchContent();
-      } else {
-        showStatus("error", resData.message || "Error al eliminar mensaje.");
-      }
-    } catch {
-      showStatus("error", "Error de conexión.");
-    }
+    await handleContentAction("deleteMessage", { id });
   };
 
   if (checkingAuth) {
@@ -912,45 +878,31 @@ export default function AdminPage() {
             {/* TAB 6: GALERÍA DE FOTOS */}
             {activeTab === "gallery" && (
               <div className="flex flex-col gap-8">
-                {/* Form agregar (Subir archivo) */}
+                {/* Agregar por URL en Firestore */}
                 <div className="glass-card rounded-3xl p-8 relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-full h-[2px] bg-dorado" />
-                  <h2 className="font-display text-xl font-bold text-white mb-6">
-                    Subir Nueva Foto a la Galería
+                  <h2 className="font-display text-xl font-bold text-white mb-2">
+                    Agregar Foto a la Galería (100% Gratis en Firestore)
                   </h2>
+                  <p className="text-xs text-texto-muted mb-6">
+                    Pegá aquí el enlace / URL de cualquier foto (Facebook, Instagram, Google Drive, Unsplash, Imgur, etc.)
+                  </p>
                   
-                  <form onSubmit={handleImageUpload} className="flex flex-col gap-5">
-                    <div>
-                      <label className="text-[10px] font-bold text-dorado uppercase tracking-wider block mb-1.5">
-                        Seleccionar Archivo (Imagen JPG, JPEG, PNG)
-                      </label>
-                      <input
-                        id="fileInput"
-                        type="file"
-                        required
-                        accept="image/*"
-                        onChange={(e) => {
-                          if (e.target.files && e.target.files.length > 0) {
-                            setUploadFile(e.target.files[0]);
-                          }
-                        }}
-                        className="w-full bg-monte-dark/60 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-dorado focus:outline-none transition-colors"
-                      />
-                    </div>
-                    
+                  <form onSubmit={handleAddPhotoUrl} className="flex flex-col sm:flex-row gap-3">
+                    <input
+                      type="url"
+                      required
+                      value={photoUrlInput}
+                      onChange={(e) => setPhotoUrlInput(e.target.value)}
+                      placeholder="Ej. https://images.unsplash.com/photo-123456... o link de foto"
+                      className="w-full bg-monte-dark/60 border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:border-dorado focus:outline-none transition-colors"
+                    />
                     <button
                       type="submit"
-                      disabled={uploading || !uploadFile}
-                      className="bg-dorado hover:bg-dorado/90 disabled:bg-dorado/40 text-crema font-bold text-xs uppercase tracking-wider py-3.5 rounded-xl transition-all duration-300 w-fit px-8 flex items-center gap-2"
+                      disabled={loading || !photoUrlInput}
+                      className="bg-dorado hover:bg-dorado/90 disabled:bg-dorado/40 text-crema font-bold text-xs uppercase tracking-wider py-3.5 rounded-xl transition-all duration-300 shrink-0 px-8"
                     >
-                      {uploading ? (
-                        <>
-                          <span className="w-4 h-4 rounded-full border-2 border-crema border-t-transparent animate-spin" />
-                          Subiendo...
-                        </>
-                      ) : (
-                        "Subir Imagen"
-                      )}
+                      Agregar Foto
                     </button>
                   </form>
                 </div>
