@@ -111,18 +111,18 @@ export async function getDbDataClient(): Promise<DbData> {
     messages.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     // Auto-seed if verse or collections don't exist yet
-    if (!verseSnap.exists() && events.length === 0) {
+    if (!verseSnap.exists()) {
       await seedFirestoreFromClient();
       return defaultData;
     }
 
     return {
       verse,
-      events: events.length ? events : defaultData.events,
-      sermons: sermons.length ? sermons : defaultData.sermons,
-      podcasts: podcasts.length ? podcasts : defaultData.podcasts,
-      studies: studies.length ? studies : defaultData.studies,
-      gallery: gallery.length ? gallery : defaultData.gallery,
+      events,
+      sermons,
+      podcasts,
+      studies,
+      gallery,
       messages
     };
   } catch (error) {

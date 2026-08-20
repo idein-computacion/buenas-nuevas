@@ -1,17 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DbData, EventItem, Sermon, Podcast, Study } from "@/lib/db";
+import { getDbDataClient, submitMessageClient } from "@/lib/firestoreClient";
 
 interface HomeClientProps {
   initialData: DbData;
 }
 
 export default function HomeClient({ initialData }: HomeClientProps) {
-  const [data] = useState<DbData>(initialData);
+  const [data, setData] = useState<DbData>(initialData);
   const [activeTab, setActiveTab] = useState<"podcasts" | "studies">("podcasts");
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
   const [selectedStudy, setSelectedStudy] = useState<Study | null>(null);
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);
+
+  // Load fresh Firestore data on client mount
+  useEffect(() => {
+    getDbDataClient().then((freshData) => {
+      if (freshData) setData(freshData);
+    }).catch(console.error);
+  }, []);
+
+  // Keyboard navigation for image lightbox
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (selectedPhotoIndex === null) return;
+      if (e.key === "Escape") setSelectedPhotoIndex(null);
+      if (e.key === "ArrowRight") {
+        setSelectedPhotoIndex((prev) => (prev !== null && prev < data.gallery.length - 1 ? prev + 1 : 0));
+      }
+      if (e.key === "ArrowLeft") {
+        setSelectedPhotoIndex((prev) => (prev !== null && prev > 0 ? prev - 1 : data.gallery.length - 1));
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedPhotoIndex, data.gallery.length]);
 
   // Contact Form States
   const [contactName, setContactName] = useState("");
@@ -28,25 +53,14 @@ export default function HomeClient({ initialData }: HomeClientProps) {
     setContactError(null);
 
     try {
-      const res = await fetch("/api/content", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "submitMessage",
-          name: contactName,
-          phone: contactPhone,
-          message: contactMessage,
-        }),
-      });
-
-      const resData = await res.json();
-      if (resData.success) {
+      const success = await submitMessageClient(contactName, contactPhone, contactMessage);
+      if (success) {
         setContactSuccess("¡Mensaje de oración / contacto enviado con éxito! Estaremos en contacto pronto.");
         setContactName("");
         setContactPhone("");
         setContactMessage("");
       } else {
-        setContactError(resData.message || "Error al enviar el mensaje.");
+        setContactError("Error al enviar el mensaje. Por favor intente más tarde.");
       }
     } catch {
       setContactError("Error de conexión. Por favor intentá de nuevo.");
@@ -453,20 +467,22 @@ export default function HomeClient({ initialData }: HomeClientProps) {
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {data.gallery.map((photo: string, idx: number) => (
-                <div 
+                <button 
+                  type="button"
                   key={idx} 
-                  className="relative aspect-square rounded-2xl overflow-hidden border border-white/5 bg-monte group cursor-pointer"
+                  onClick={() => setSelectedPhotoIndex(idx)}
+                  className="relative aspect-square w-full rounded-2xl overflow-hidden border border-white/5 bg-monte group cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-dorado transition-all p-0 block"
                 >
                   <img
                     src={photo}
                     alt={`Galería de iglesia ${idx + 1}`}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none"
                   />
-                  <div className="absolute inset-0 bg-black/10 group-hover:bg-black/45 transition-colors duration-300" />
-                  <div className="absolute bottom-4 left-4 text-[10px] text-white/0 group-hover:text-white font-bold uppercase tracking-wider transition-all duration-300">
+                  <div className="absolute inset-0 bg-black/10 group-hover:bg-black/45 transition-colors duration-300 pointer-events-none" />
+                  <div className="absolute bottom-4 left-4 text-[10px] text-white/0 group-hover:text-white font-bold uppercase tracking-wider transition-all duration-300 pointer-events-none flex items-center gap-1.5">
                     🔍 Ampliar Foto
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           )}
@@ -644,6 +660,66 @@ export default function HomeClient({ initialData }: HomeClientProps) {
             <p className="text-sm md:text-base text-texto/90 leading-relaxed whitespace-pre-wrap">
               {selectedStudy.content}
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* PHOTO LIGHTBOX MODAL */}
+      {selectedPhotoIndex !== null && data.gallery && data.gallery[selectedPhotoIndex] && (
+        <div 
+          onClick={() => setSelectedPhotoIndex(null)}
+          className="fixed inset-0 flex items-center justify-center bg-black/95 p-4 md:p-8 backdrop-blur-md animate-fade-in"
+          style={{ zIndex: 99999 }}
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="relative max-w-5xl max-h-[90vh] flex flex-col items-center justify-center"
+          >
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setSelectedPhotoIndex(null)}
+              className="absolute -top-12 right-0 bg-white/20 hover:bg-white/40 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg transition-colors z-50 cursor-pointer shadow-lg"
+              title="Cerrar (Esc)"
+            >
+              ✕
+            </button>
+
+            {/* Main Image */}
+            <div className="relative overflow-hidden rounded-2xl border border-white/20 shadow-2xl bg-black">
+              <img
+                src={data.gallery[selectedPhotoIndex]}
+                alt={`Foto ampliada ${selectedPhotoIndex + 1}`}
+                className="max-h-[75vh] max-w-[90vw] md:max-w-4xl object-contain block rounded-2xl select-none"
+              />
+            </div>
+
+            {/* Navigation & Counter Bar */}
+            <div className="mt-4 flex items-center gap-6 text-white text-xs font-bold uppercase tracking-wider">
+              {data.gallery.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedPhotoIndex((prev) => (prev !== null && prev > 0 ? prev - 1 : data.gallery.length - 1))}
+                  className="bg-monte hover:bg-monte-light border border-white/20 text-dorado px-4 py-2 rounded-full transition-all flex items-center gap-1.5 cursor-pointer hover:scale-105"
+                >
+                  ← Anterior
+                </button>
+              )}
+
+              <span className="text-texto-muted bg-monte/80 px-3 py-1.5 rounded-full border border-white/10 text-[11px]">
+                {selectedPhotoIndex + 1} / {data.gallery.length}
+              </span>
+
+              {data.gallery.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedPhotoIndex((prev) => (prev !== null && prev < data.gallery.length - 1 ? prev + 1 : 0))}
+                  className="bg-monte hover:bg-monte-light border border-white/20 text-dorado px-4 py-2 rounded-full transition-all flex items-center gap-1.5 cursor-pointer hover:scale-105"
+                >
+                  Siguiente →
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
