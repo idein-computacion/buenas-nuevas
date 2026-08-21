@@ -41,6 +41,7 @@ export interface Study {
   author: string;
   date: string;
   content: string;
+  pdfUrl?: string;
 }
 
 export interface ContactMessage {

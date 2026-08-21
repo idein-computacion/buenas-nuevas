@@ -13,6 +13,7 @@ import {
   toggleMessageReadClient, 
   deleteMessageClient 
 } from "@/lib/firestoreClient";
+import { triggerPdfDownload } from "@/lib/pdfHelper";
 
 type TabType = "verse" | "events" | "sermons" | "podcasts" | "studies" | "gallery" | "messages";
 
@@ -34,7 +35,7 @@ export default function AdminPage() {
   const [eventForm, setEventForm] = useState({ title: "", date: "", time: "", description: "", category: "Comunidad" });
   const [sermonForm, setSermonForm] = useState({ title: "", preacher: "", date: "", videoUrl: "", duration: "" });
   const [podcastForm, setPodcastForm] = useState({ title: "", speaker: "", date: "", audioUrl: "", duration: "" });
-  const [studyForm, setStudyForm] = useState({ title: "", author: "", date: "", content: "" });
+  const [studyForm, setStudyForm] = useState({ title: "", author: "", date: "", content: "", pdfUrl: "" });
   
   // Gallery Photo URL State
   const [photoUrlInput, setPhotoUrlInput] = useState<string>("");
@@ -178,7 +179,7 @@ export default function AdminPage() {
   const addStudy = (e: React.FormEvent) => {
     e.preventDefault();
     handleContentAction("saveItem", { type: "studies", item: studyForm });
-    setStudyForm({ title: "", author: "", date: "", content: "" });
+    setStudyForm({ title: "", author: "", date: "", content: "", pdfUrl: "" });
   };
 
   const deleteItem = (type: "events" | "sermons" | "podcasts" | "studies", id: string) => {
@@ -833,6 +834,18 @@ export default function AdminPage() {
                         className="w-full bg-monte-dark/60 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-dorado focus:outline-none transition-colors resize-none"
                       />
                     </div>
+                    <div className="md:col-span-2">
+                      <label className="text-[10px] font-bold text-dorado uppercase tracking-wider block mb-1.5">
+                        Enlace a Archivo PDF (Opcional - Google Drive, Dropbox, URL directa)
+                      </label>
+                      <input
+                        type="url"
+                        value={studyForm.pdfUrl}
+                        onChange={(e) => setStudyForm({ ...studyForm, pdfUrl: e.target.value })}
+                        placeholder="Ej. https://ejemplo.com/estudio.pdf o enlace a Google Drive"
+                        className="w-full bg-monte-dark/60 border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:border-dorado focus:outline-none transition-colors"
+                      />
+                    </div>
                     
                     <button
                       type="submit"
@@ -860,6 +873,15 @@ export default function AdminPage() {
                             <span className="text-[9px] font-bold text-dorado uppercase tracking-wide">{study.author} · {study.date}</span>
                             <h4 className="font-display font-bold text-white text-base mt-0.5">{study.title}</h4>
                             <p className="text-xs text-texto-muted mt-1 max-w-xl line-clamp-2">{study.content}</p>
+                            {study.pdfUrl && (
+                              <button 
+                                type="button"
+                                onClick={() => triggerPdfDownload(study.pdfUrl!, study.title)}
+                                className="inline-flex items-center gap-1.5 text-[11px] font-bold text-dorado hover:underline mt-2 bg-white/5 border border-dorado/30 px-3 py-1 rounded-lg cursor-pointer"
+                              >
+                                📥 Descargar Documento PDF
+                              </button>
+                            )}
                           </div>
                           <button
                             onClick={() => deleteItem("studies", study.id)}

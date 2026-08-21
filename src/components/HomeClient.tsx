@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { DbData, EventItem, Sermon, Podcast, Study } from "@/lib/db";
 import { getDbDataClient, submitMessageClient } from "@/lib/firestoreClient";
+import { triggerPdfDownload } from "@/lib/pdfHelper";
 
 interface HomeClientProps {
   initialData: DbData;
@@ -424,14 +425,26 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                         </p>
                       </div>
 
-                      <div className="mt-5 pt-4 border-t border-white/5 flex justify-between items-center">
+                      <div className="mt-5 pt-4 border-t border-white/5 flex flex-wrap justify-between items-center gap-3">
                         <button
                           onClick={() => setSelectedStudy(study)}
                           className="text-xs font-bold text-dorado hover:text-dorado/80 transition-colors uppercase tracking-wider"
                         >
                           📖 Leer completo →
                         </button>
-                        <span className="text-[10px] text-texto-muted font-semibold">
+                        {study.pdfUrl && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              triggerPdfDownload(study.pdfUrl!, study.title);
+                            }}
+                            className="text-xs font-bold bg-tierra/30 hover:bg-tierra/50 border border-tierra/40 text-white px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer"
+                          >
+                            📥 Descargar PDF
+                          </button>
+                        )}
+                        <span className="text-[10px] text-texto-muted font-semibold ml-auto">
                           Autor: {study.author}
                         </span>
                       </div>
@@ -656,6 +669,18 @@ export default function HomeClient({ initialData }: HomeClientProps) {
             </span>
             
             <div className="h-px bg-white/5 mb-6" />
+            
+            {selectedStudy.pdfUrl && (
+              <div className="mb-6">
+                <button
+                  type="button"
+                  onClick={() => triggerPdfDownload(selectedStudy.pdfUrl!, selectedStudy.title)}
+                  className="inline-flex items-center gap-2 bg-dorado hover:bg-dorado/90 text-crema px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-md cursor-pointer"
+                >
+                  📥 Descargar Documento PDF
+                </button>
+              </div>
+            )}
             
             <p className="text-sm md:text-base text-texto/90 leading-relaxed whitespace-pre-wrap">
               {selectedStudy.content}
