@@ -104,5 +104,12 @@
       "date": "2026-07-14T18:41:05.673Z",
       "read": false
     }
-  ]
+  ],
+  "liveStream": {
+    "active": false,
+    "title": "Culto de Adoración y Palabra en Vivo",
+    "streamUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    "description": "Te damos la bienvenida a nuestra reunión dominical. ¡Alabemos y escuchemos la Palabra de Dios juntos desde cualquier lugar!",
+    "scheduledTime": "Domingos 09:30 hs"
+  }
 }

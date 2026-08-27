@@ -53,6 +53,14 @@ export interface ContactMessage {
   read: boolean;
 }
 
+export interface LiveStream {
+  active: boolean;
+  title: string;
+  streamUrl: string;
+  description: string;
+  scheduledTime?: string;
+}
+
 export interface DbData {
   verse: Verse;
   events: EventItem[];
@@ -61,6 +69,7 @@ export interface DbData {
   studies: Study[];
   gallery: string[];
   messages?: ContactMessage[];
+  liveStream?: LiveStream;
 }
 
 const dbPath = path.join(process.cwd(), 'src/data/db.json');

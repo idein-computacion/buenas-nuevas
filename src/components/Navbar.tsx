@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { getCachedDbData, getDbDataClient, subscribeToLiveStreamClient } from "@/lib/firestoreClient";
 
 const LINKS = [
   { href: "/#inicio", label: "Inicio" },
@@ -13,6 +14,42 @@ const LINKS = [
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const [isLive, setIsLive] = useState<boolean>(false);
+
+  useEffect(() => {
+    // 1. Initial check from fast cache
+    const cached = getCachedDbData();
+    if (cached?.liveStream) {
+      setIsLive(Boolean(cached.liveStream.active));
+    }
+
+    // 2. Real-time subscription to Firestore
+    const unsubscribe = subscribeToLiveStreamClient((data) => {
+      if (data) {
+        setIsLive(Boolean(data.active));
+      }
+    });
+
+    // 3. Local tab listener for instant sync
+    const handleLocalUpdate = (e: any) => {
+      if (e?.detail) {
+        setIsLive(Boolean(e.detail.active));
+      }
+    };
+    window.addEventListener("livestream-updated", handleLocalUpdate);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener("livestream-updated", handleLocalUpdate);
+    };
+  }, []);
+
+  const handleLiveClick = () => {
+    setOpen(false);
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("open-livestream"));
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 glass-nav">
@@ -47,6 +84,27 @@ export default function Navbar() {
               {l.label}
             </Link>
           ))}
+
+          {/* BOTON VER EN VIVO */}
+          <Link
+            href="/#mensajes"
+            onClick={handleLiveClick}
+            className={`text-xs font-bold px-4 py-2 rounded-full transition-all flex items-center gap-2 uppercase tracking-wider ${
+              isLive
+                ? "bg-red-600 hover:bg-red-700 text-white shadow-[0_0_25px_rgba(239,68,68,0.75)] animate-pulse border border-red-500"
+                : "bg-monte-dark/60 hover:bg-monte text-texto-muted/70 hover:text-white border border-white/10 opacity-75 hover:opacity-100"
+            }`}
+          >
+            {isLive ? (
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-90"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
+              </span>
+            ) : (
+              <span className="inline-flex rounded-full h-2 w-2 bg-zinc-600"></span>
+            )}
+            Ver En Vivo
+          </Link>
           
           <div className="h-4 w-px bg-white/10" />
 
@@ -69,22 +127,67 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* MOBILE TOGGLE */}
-        <button
-          onClick={() => setOpen(!open)}
-          className="md:hidden flex flex-col gap-1.5 p-2 rounded hover:bg-white/5 transition-colors"
-          aria-label="Abrir menú"
-          aria-expanded={open}
-        >
-          <span className="w-6 h-0.5 bg-texto" />
-          <span className="w-6 h-0.5 bg-texto" />
-          <span className="w-6 h-0.5 bg-texto" />
-        </button>
+        {/* MOBILE ACTIONS */}
+        <div className="flex md:hidden items-center gap-3">
+          {/* Boton compacto en vivo para moviles */}
+          <Link
+            href="/#mensajes"
+            onClick={handleLiveClick}
+            className={`text-[10px] font-bold px-3 py-1.5 rounded-full transition-all flex items-center gap-1.5 uppercase tracking-wider ${
+              isLive
+                ? "bg-red-600 text-white shadow-[0_0_18px_rgba(239,68,68,0.7)] animate-pulse border border-red-500"
+                : "bg-monte-dark/60 text-texto-muted/70 border border-white/10 opacity-75"
+            }`}
+          >
+            {isLive ? (
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-90"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+              </span>
+            ) : (
+              <span className="inline-flex rounded-full h-1.5 w-1.5 bg-zinc-600"></span>
+            )}
+            Ver En Vivo
+          </Link>
+
+          {/* MOBILE TOGGLE */}
+          <button
+            onClick={() => setOpen(!open)}
+            className="flex flex-col gap-1.5 p-2 rounded hover:bg-white/5 transition-colors"
+            aria-label="Abrir menú"
+            aria-expanded={open}
+          >
+            <span className="w-6 h-0.5 bg-texto" />
+            <span className="w-6 h-0.5 bg-texto" />
+            <span className="w-6 h-0.5 bg-texto" />
+          </button>
+        </div>
       </nav>
 
       {/* MOBILE MENU */}
       {open && (
         <div className="md:hidden px-6 pb-6 flex flex-col gap-4 border-t border-white/5 pt-4 bg-monte-dark/95 backdrop-blur-lg">
+          {/* BOTON EN VIVO DESTACADO EN MOVIL */}
+          <Link
+            href="/#mensajes"
+            onClick={handleLiveClick}
+            className={`text-xs font-bold px-4 py-3 rounded-xl transition-all flex items-center justify-center gap-2 uppercase tracking-wider text-center ${
+              isLive
+                ? "bg-red-600 text-white shadow-[0_0_25px_rgba(239,68,68,0.7)] animate-pulse border border-red-500"
+                : "bg-monte-dark/60 text-texto-muted/70 border border-white/10 opacity-80"
+            }`}
+          >
+            {isLive ? (
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-90"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
+              </span>
+            ) : (
+              <span className="inline-flex rounded-full h-2 w-2 bg-zinc-600"></span>
+            )}
+            Ver En Vivo
+          </Link>
+
           {LINKS.map((l) => (
             <Link
               key={l.href}

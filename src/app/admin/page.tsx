@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { DbData, EventItem, Sermon, Podcast, Study } from "@/lib/db";
+import { DbData, EventItem, Sermon, Podcast, Study, LiveStream } from "@/lib/db";
 import { 
   getDbDataClient, 
+  getCachedDbData,
   updateVerseClient, 
+  updateLiveStreamClient,
   saveItemClient, 
   deleteItemClient, 
   addGalleryPhotoClient, 
@@ -14,8 +16,9 @@ import {
   deleteMessageClient 
 } from "@/lib/firestoreClient";
 import { triggerPdfDownload } from "@/lib/pdfHelper";
+import { getYouTubeEmbedUrl } from "@/lib/youtube";
 
-type TabType = "verse" | "events" | "sermons" | "podcasts" | "studies" | "gallery" | "messages";
+type TabType = "verse" | "events" | "sermons" | "podcasts" | "studies" | "gallery" | "messages" | "livestream";
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -36,51 +39,64 @@ export default function AdminPage() {
   const [sermonForm, setSermonForm] = useState({ title: "", preacher: "", date: "", videoUrl: "", duration: "" });
   const [podcastForm, setPodcastForm] = useState({ title: "", speaker: "", date: "", audioUrl: "", duration: "" });
   const [studyForm, setStudyForm] = useState({ title: "", author: "", date: "", content: "", pdfUrl: "" });
+  const [liveStreamForm, setLiveStreamForm] = useState<LiveStream>({
+    active: false,
+    title: "Culto de Adoración y Palabra en Vivo",
+    streamUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    description: "Te damos la bienvenida a nuestra reunión dominical. ¡Alabemos y escuchemos la Palabra de Dios juntos desde cualquier lugar!",
+    scheduledTime: "Domingos 09:30 hs"
+  });
   
   // Gallery Photo URL State
   const [photoUrlInput, setPhotoUrlInput] = useState<string>("");
 
-  // Check auth and fetch data on mount
+  // Check auth and fetch data on mount instantly
   useEffect(() => {
-    async function init() {
-      try {
-        const storedAuth = typeof window !== 'undefined' ? sessionStorage.getItem("bn_admin_auth") : null;
-        if (storedAuth === "true") {
-          setIsAuthenticated(true);
-          await fetchContent();
-        } else {
-          try {
-            const authRes = await fetch("/api/auth");
-            const authData = await authRes.json();
-            setIsAuthenticated(authData.authenticated);
-            if (authData.authenticated) {
-              await fetchContent();
-            }
-          } catch {
-            // Keep false
-          }
-        }
-      } catch (err) {
-        console.error("Error initializing admin portal", err);
-      } finally {
-        setCheckingAuth(false);
+    try {
+      const storedAuth = typeof window !== 'undefined' ? sessionStorage.getItem("bn_admin_auth") : null;
+      const isAuth = storedAuth === "true";
+      setIsAuthenticated(isAuth);
+      
+      // Load initial cached data immediately
+      const initialData = getCachedDbData();
+      setDbData(initialData);
+      if (initialData?.verse) {
+        setVerseForm({
+          text: initialData.verse.text || "",
+          reference: initialData.verse.reference || ""
+        });
       }
+      if (initialData?.liveStream) {
+        setLiveStreamForm(initialData.liveStream);
+      }
+
+      if (isAuth) {
+        fetchContent();
+      }
+    } catch (err) {
+      console.error("Error initializing admin portal", err);
+    } finally {
+      setCheckingAuth(false);
     }
-    init();
   }, []);
 
   const fetchContent = async () => {
     try {
       const data = await getDbDataClient();
-      setDbData(data);
-      if (data && data.verse) {
-        setVerseForm({
-          text: data.verse.text || "",
-          reference: data.verse.reference || ""
-        });
+      if (data) {
+        setDbData(data);
+        if (data.verse) {
+          setVerseForm({
+            text: data.verse.text || "",
+            reference: data.verse.reference || ""
+          });
+        }
+        if (data.liveStream) {
+          setLiveStreamForm(data.liveStream);
+        }
       }
     } catch (err) {
-      showStatus("error", "Error al cargar los contenidos.");
+      console.error("Error fetching content:", err);
     }
   };
 
@@ -89,22 +105,21 @@ export default function AdminPage() {
     setTimeout(() => setStatusMessage(null), 4000);
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError(null);
-    setLoading(true);
 
-    try {
-      if (username === "admin" && password === "buenasnuevas2026") {
-        if (typeof window !== 'undefined') sessionStorage.setItem("bn_admin_auth", "true");
-        setIsAuthenticated(true);
-        await fetchContent();
-      } else {
-        setLoginError("Usuario o contraseña incorrecta.");
-      }
-    } catch (err) {
-      setLoginError("Error conectando.");
-    } finally {
+    const validUser = process.env.NEXT_PUBLIC_ADMIN_USER || "admin";
+    const validPass = process.env.NEXT_PUBLIC_ADMIN_PASS || "buenasnuevas2026";
+
+    if (username.trim() === validUser && password.trim() === validPass) {
+      if (typeof window !== 'undefined') sessionStorage.setItem("bn_admin_auth", "true");
+      setIsAuthenticated(true);
+      setLoading(false);
+      // Fetch fresh data in background without blocking login
+      fetchContent();
+    } else {
+      setLoginError("Usuario o contraseña incorrecta.");
       setLoading(false);
     }
   };
@@ -125,6 +140,8 @@ export default function AdminPage() {
       let success = false;
       if (action === "updateVerse") {
         success = await updateVerseClient(extraBody.verse);
+      } else if (action === "updateLiveStream") {
+        success = await updateLiveStreamClient(extraBody.liveStream);
       } else if (action === "saveItem") {
         success = await saveItemClient(extraBody.type, extraBody.item);
       } else if (action === "deleteItem") {
@@ -156,6 +173,17 @@ export default function AdminPage() {
   const saveVerse = (e: React.FormEvent) => {
     e.preventDefault();
     handleContentAction("updateVerse", { verse: verseForm });
+  };
+
+  const saveLiveStream = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleContentAction("updateLiveStream", { liveStream: liveStreamForm });
+  };
+
+  const toggleLiveStatus = async () => {
+    const updated = { ...liveStreamForm, active: !liveStreamForm.active };
+    setLiveStreamForm(updated);
+    await handleContentAction("updateLiveStream", { liveStream: updated });
   };
 
   const addEvent = (e: React.FormEvent) => {
@@ -340,6 +368,10 @@ export default function AdminPage() {
           {/* Sidebar Menú Tabs */}
           <div className="md:col-span-3 flex flex-col gap-2 bg-monte rounded-2xl p-3 border border-white/5">
             {[
+              { 
+                id: "livestream", 
+                label: `🔴 Streaming en Vivo${liveStreamForm.active ? " (ACTIVO)" : ""}` 
+              },
               { id: "verse", label: "⛪ Versículo del Día" },
               { id: "events", label: "📅 Eventos / Agenda" },
               { id: "sermons", label: "🎥 Sermones (Videos)" },
@@ -372,6 +404,143 @@ export default function AdminPage() {
           {/* Formularios y Contenido */}
           <div className="md:col-span-9 flex flex-col gap-8">
             
+            {/* TAB: STREAMING EN VIVO */}
+            {activeTab === "livestream" && (
+              <div className="flex flex-col gap-8">
+                <div className="glass-card rounded-3xl p-8 relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-[2px] bg-red-500" />
+                  
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                    <div>
+                      <h2 className="font-display text-xl font-bold text-white flex items-center gap-2">
+                        <span className={`w-3 h-3 rounded-full ${liveStreamForm.active ? "bg-red-500 animate-ping" : "bg-zinc-600"}`} />
+                        Transmisión en Vivo (Streaming)
+                      </h2>
+                      <p className="text-xs text-texto-muted mt-1">
+                        Controlá la transmisión en directo para YouTube Live o Facebook. Al activarlo, aparecerá destacado en la página web y en el botón &ldquo;Ver en vivo&rdquo;.
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={loading}
+                      onClick={toggleLiveStatus}
+                      className={`px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
+                        liveStreamForm.active
+                          ? "bg-red-600 hover:bg-red-700 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]"
+                          : "bg-emerald-800/80 hover:bg-emerald-700 text-emerald-100 border border-emerald-600/40 shadow"
+                      }`}
+                    >
+                      <span className={`w-2.5 h-2.5 rounded-full ${liveStreamForm.active ? "bg-white animate-pulse" : "bg-emerald-400"}`} />
+                      {liveStreamForm.active ? "En Vivo: ACTIVADO (Apagar)" : "En Vivo: APAGADO (Activar)"}
+                    </button>
+                  </div>
+
+                  {/* Estado Banner */}
+                  <div className={`p-4 rounded-2xl border text-xs font-bold mb-6 flex items-center justify-between ${
+                    liveStreamForm.active
+                      ? "bg-red-950/40 border-red-800/50 text-red-300"
+                      : "bg-monte-dark/40 border-white/5 text-texto-muted"
+                  }`}>
+                    <span>
+                      {liveStreamForm.active 
+                        ? "🔴 La transmisión está ACTIVA y visible para todos los visitantes del sitio." 
+                        : "⚪ La transmisión está INACTIVA. Los visitantes verán el horario de la próxima reunión."}
+                    </span>
+                    <span className="text-[10px] uppercase tracking-wider bg-white/5 px-2 py-1 rounded">
+                      {liveStreamForm.active ? "Transmitiendo" : "Fuera de línea"}
+                    </span>
+                  </div>
+
+                  <form onSubmit={saveLiveStream} className="flex flex-col gap-5">
+                    <div>
+                      <label className="text-[10px] font-bold text-dorado uppercase tracking-wider block mb-1.5">
+                        Título de la Transmisión
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={liveStreamForm.title}
+                        onChange={(e) => setLiveStreamForm({ ...liveStreamForm, title: e.target.value })}
+                        placeholder="Ej. Culto Dominical de Adoración y Mensaje de la Palabra"
+                        className="w-full bg-monte-dark/60 border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:border-dorado focus:outline-none transition-colors"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-[10px] font-bold text-dorado uppercase tracking-wider block mb-1.5">
+                          Enlace del Video en Vivo (YouTube Live)
+                        </label>
+                        <input
+                          type="url"
+                          required
+                          value={liveStreamForm.streamUrl}
+                          onChange={(e) => setLiveStreamForm({ ...liveStreamForm, streamUrl: e.target.value })}
+                          placeholder="Ej. https://www.youtube.com/watch?v=... o https://youtu.be/..."
+                          className="w-full bg-monte-dark/60 border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:border-dorado focus:outline-none transition-colors"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-bold text-dorado uppercase tracking-wider block mb-1.5">
+                          Horario Programado / Aviso
+                        </label>
+                        <input
+                          type="text"
+                          value={liveStreamForm.scheduledTime || ""}
+                          onChange={(e) => setLiveStreamForm({ ...liveStreamForm, scheduledTime: e.target.value })}
+                          placeholder="Ej. Domingos 09:30 hs · Culto Familiar"
+                          className="w-full bg-monte-dark/60 border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:border-dorado focus:outline-none transition-colors"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-bold text-dorado uppercase tracking-wider block mb-1.5">
+                        Descripción o Mensaje para los Espectadores
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={liveStreamForm.description}
+                        onChange={(e) => setLiveStreamForm({ ...liveStreamForm, description: e.target.value })}
+                        placeholder="Escribe un mensaje de bienvenida o instrucciones para quienes se conectan..."
+                        className="w-full bg-monte-dark/60 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-dorado focus:outline-none transition-colors resize-none"
+                      />
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-4 pt-2">
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="bg-dorado hover:bg-dorado/90 disabled:bg-dorado/50 text-crema font-bold text-xs uppercase tracking-wider py-3.5 px-8 rounded-xl transition-all duration-300 hover:shadow-[0_4px_20px_rgba(200,168,75,0.25)]"
+                      >
+                        {loading ? "Guardando..." : "Guardar Configuración en Vivo"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                {/* Vista Previa del Reproductor */}
+                {liveStreamForm.streamUrl && (
+                  <div className="glass-card rounded-3xl p-8 relative overflow-hidden">
+                    <h3 className="font-display text-base font-bold text-white mb-4 flex items-center gap-2">
+                      <span>📺</span> Vista Previa del Reproductor
+                    </h3>
+                    <div className="aspect-video w-full max-w-2xl rounded-2xl overflow-hidden border border-white/10 bg-black">
+                      <iframe
+                        src={getYouTubeEmbedUrl(liveStreamForm.streamUrl)}
+                        title="Vista Previa de Transmisión"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        className="w-full h-full border-0"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* TAB 1: VERSICULO DEL DIA */}
             {activeTab === "verse" && (
               <div className="glass-card rounded-3xl p-8 relative overflow-hidden">
@@ -564,7 +733,7 @@ export default function AdminPage() {
                     </div>
                     <div>
                       <label className="text-[10px] font-bold text-dorado uppercase tracking-wider block mb-1.5">
-                        Prepredicador (Pastor/a o Expositor)
+                        Predicador (Pastor/a o Expositor)
                       </label>
                       <input
                         type="text"

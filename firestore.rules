@@ -1,8 +1,35 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if true;
+    // Lectura pública para contenido estático y dinámico de la iglesia
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    match /events/{eventId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    match /sermons/{sermonId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    match /podcasts/{podcastId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    match /studies/{studyId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    match /gallery/{photoId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    // Mensajes de contacto y peticiones de oración
+    match /messages/{messageId} {
+      allow create: if true;
+      allow read, update, delete: if true;
     }
   }
 }

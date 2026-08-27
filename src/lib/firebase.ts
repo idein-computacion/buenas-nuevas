@@ -5,7 +5,6 @@ const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyDcKXT_5DFh5PvpOy-3vv4_kKFQttEjSQU",
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "buenasnuevas-obera.firebaseapp.com",
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "buenasnuevas-obera",
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "buenasnuevas-obera.firebasestorage.app",
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "614694281606",
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:614694281606:web:853a64743bb2bf5b0a0c07",
 };

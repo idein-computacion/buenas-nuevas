@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { DbData, EventItem, Sermon, Podcast, Study } from "@/lib/db";
-import { getDbDataClient, submitMessageClient } from "@/lib/firestoreClient";
+import { getDbDataClient, submitMessageClient, subscribeToLiveStreamClient } from "@/lib/firestoreClient";
 import { triggerPdfDownload } from "@/lib/pdfHelper";
+import { getYouTubeEmbedUrl, getYouTubeThumbnail } from "@/lib/youtube";
 
 interface HomeClientProps {
   initialData: DbData;
@@ -15,12 +16,37 @@ export default function HomeClient({ initialData }: HomeClientProps) {
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
   const [selectedStudy, setSelectedStudy] = useState<Study | null>(null);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);
+  const [isLiveModalOpen, setIsLiveModalOpen] = useState<boolean>(false);
 
-  // Load fresh Firestore data on client mount
+  // Load fresh Firestore data on client mount and subscribe to realtime livestream
   useEffect(() => {
     getDbDataClient().then((freshData) => {
       if (freshData) setData(freshData);
     }).catch(console.error);
+
+    const unsubscribe = subscribeToLiveStreamClient((liveStream) => {
+      if (liveStream) {
+        setData((prev) => ({ ...prev, liveStream }));
+      }
+    });
+
+    const handleOpenLive = () => {
+      setIsLiveModalOpen(true);
+    };
+    window.addEventListener("open-livestream", handleOpenLive);
+
+    const handleLocalUpdate = (e: any) => {
+      if (e?.detail) {
+        setData((prev) => ({ ...prev, liveStream: e.detail }));
+      }
+    };
+    window.addEventListener("livestream-updated", handleLocalUpdate);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener("open-livestream", handleOpenLive);
+      window.removeEventListener("livestream-updated", handleLocalUpdate);
+    };
   }, []);
 
   // Keyboard navigation for image lightbox
@@ -70,18 +96,10 @@ export default function HomeClient({ initialData }: HomeClientProps) {
     }
   };
 
-  // Helper to extract YouTube ID for embedding
-  const getYouTubeEmbedUrl = (url: string) => {
-    try {
-      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-      const match = url.match(regExp);
-      if (match && match[2].length === 11) {
-        return `https://www.youtube.com/embed/${match[2]}`;
-      }
-      return url;
-    } catch {
-      return url;
-    }
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return "";
+    const dateObj = new Date(dateStr.includes("T") ? dateStr : `${dateStr}T12:00:00`);
+    return isNaN(dateObj.getTime()) ? dateStr : dateObj.toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" });
   };
 
   return (
@@ -260,7 +278,7 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                       </div>
                       
                       <div className="text-[10px] font-bold text-white/50 border-t border-white/5 pt-3.5 uppercase tracking-wider">
-                        📅 {new Date(event.date).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" })}
+                        📅 {formatDate(event.date)}
                       </div>
                     </div>
                   ))}
@@ -288,21 +306,92 @@ export default function HomeClient({ initialData }: HomeClientProps) {
             </p>
           </div>
 
-          {data.sermons.length === 0 ? (
+          {(!data.sermons || data.sermons.length === 0) && !data.liveStream ? (
             <div className="border border-dashed border-white/10 rounded-2xl p-10 text-center text-sm text-texto-muted">
               Aún no se han subido predicaciones en video.
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* MINIATURA DESTACADA DE TRANSMISIÓN EN VIVO */}
+              {data.liveStream && (
+                <div 
+                  onClick={() => setIsLiveModalOpen(true)}
+                  className={`glass-card rounded-2xl overflow-hidden group flex flex-col justify-between cursor-pointer border transition-all duration-300 ${
+                    data.liveStream.active
+                      ? "border-red-500/60 hover:border-red-400 shadow-[0_0_30px_rgba(239,68,68,0.2)] hover:shadow-[0_0_35px_rgba(239,68,68,0.4)]"
+                      : "border-white/10 hover:border-dorado/50"
+                  }`}
+                >
+                  <div>
+                    {/* Thumbnail con imagen de YouTube */}
+                    <div className="relative h-48 bg-gradient-to-br from-monte-dark to-monte flex items-center justify-center overflow-hidden border-b border-white/5">
+                      {getYouTubeThumbnail(data.liveStream.streamUrl) ? (
+                        <img 
+                          src={getYouTubeThumbnail(data.liveStream.streamUrl)!} 
+                          alt="Transmisión en vivo" 
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-100"
+                        />
+                      ) : null}
+                      <div className="absolute inset-0 bg-black/35 group-hover:bg-black/20 transition-colors duration-300" />
+                      
+                      {/* Badge EN VIVO */}
+                      <div className="absolute top-3 left-3 z-10">
+                        <span className={`text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-lg ${
+                          data.liveStream.active 
+                            ? "bg-red-600 text-white animate-pulse" 
+                            : "bg-monte/90 text-texto-muted border border-white/10"
+                        }`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${data.liveStream.active ? "bg-white animate-ping" : "bg-zinc-500"}`} />
+                          {data.liveStream.active ? "En Vivo Ahora" : "Streaming en Vivo"}
+                        </span>
+                      </div>
+
+                      {/* Play button */}
+                      <div className={`w-14 h-14 rounded-full flex items-center justify-center text-lg pl-1 transition-transform duration-300 z-10 shadow-lg ${
+                        data.liveStream.active
+                          ? "bg-red-600 text-white group-hover:scale-110 shadow-[0_0_25px_rgba(239,68,68,0.5)]"
+                          : "bg-dorado text-crema group-hover:scale-110 shadow-[0_0_20px_rgba(200,168,75,0.3)]"
+                      }`}>
+                        ▶
+                      </div>
+                    </div>
+
+                    <div className="p-6">
+                      <h3 className="font-display text-base font-bold text-white leading-snug line-clamp-2 group-hover:text-dorado transition-colors">
+                        {data.liveStream.title || "Culto en Vivo · Buenas Nuevas"}
+                      </h3>
+                      <p className="text-xs text-texto-muted mt-2 line-clamp-2">
+                        {data.liveStream.description || "Hacé clic para ver la transmisión en directo o grabada."}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="px-6 pb-6 pt-4 border-t border-white/5 flex justify-between items-center text-[10px] text-texto-muted uppercase tracking-wider font-bold">
+                    <span className={data.liveStream.active ? "text-red-400 font-extrabold" : "text-dorado"}>
+                      {data.liveStream.active ? "🔴 Transmitiendo" : "📅 Programado"}
+                    </span>
+                    <span>{data.liveStream.scheduledTime || "Domingos 09:30 hs"}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Sermones grabados */}
               {data.sermons.map((sermon: Sermon) => (
                 <div key={sermon.id} className="glass-card rounded-2xl overflow-hidden group flex flex-col justify-between">
                   <div>
-                    {/* Thumbnail placeholder */}
+                    {/* Thumbnail con imagen de YouTube */}
                     <div 
                       onClick={() => setSelectedVideo(sermon.videoUrl)}
                       className="relative h-48 bg-gradient-to-br from-monte-dark to-monte flex items-center justify-center cursor-pointer overflow-hidden border-b border-white/5"
                     >
-                      <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-300" />
+                      {getYouTubeThumbnail(sermon.videoUrl) ? (
+                        <img 
+                          src={getYouTubeThumbnail(sermon.videoUrl)!} 
+                          alt={sermon.title} 
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-85 group-hover:opacity-100"
+                        />
+                      ) : null}
+                      <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors duration-300" />
                       
                       {/* Play button indicator */}
                       <div className="w-14 h-14 rounded-full bg-dorado text-crema flex items-center justify-center text-lg pl-1 shadow-[0_0_30px_rgba(200,168,75,0.3)] group-hover:scale-110 transition-transform duration-300 z-10">
@@ -745,6 +834,145 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                 </button>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* LIVE STREAM MODAL (POPUP ON CLICK "VER EN VIVO") */}
+      {isLiveModalOpen && data.liveStream && (
+        <div 
+          onClick={() => setIsLiveModalOpen(false)}
+          className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/90 p-4 backdrop-blur-md animate-fade-in"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className={`relative w-full ${
+              data.liveStream.active ? "max-w-4xl border-red-500/40 shadow-[0_0_50px_rgba(239,68,68,0.25)]" : "max-w-xl border-white/10 shadow-2xl"
+            } bg-monte-dark rounded-3xl overflow-hidden border`}
+          >
+            {/* Header Modal */}
+            <div className="p-6 border-b border-white/10 flex items-center justify-between bg-monte">
+              <div className="flex items-center gap-3">
+                <span className={`w-3 h-3 rounded-full ${data.liveStream.active ? "bg-red-500 animate-ping" : "bg-zinc-500"}`} />
+                <div>
+                  <span className={`text-[10px] font-bold uppercase tracking-[0.2em] block ${
+                    data.liveStream.active ? "text-red-400" : "text-texto-muted"
+                  }`}>
+                    {data.liveStream.active ? "● En Vivo Ahora" : "Transmisión Fuera de Línea"}
+                  </span>
+                  <h3 className="font-display text-base md:text-lg font-bold text-white leading-tight">
+                    {data.liveStream.active ? (data.liveStream.title || "Culto en Vivo · Iglesia Buenas Nuevas") : "Información de Transmisión en Vivo"}
+                  </h3>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setIsLiveModalOpen(false)}
+                className="bg-white/10 hover:bg-white/20 text-white w-9 h-9 rounded-full flex items-center justify-center font-bold text-base transition-colors"
+                title="Cerrar"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* CONTENIDO SEGÚN ESTADO */}
+            {!data.liveStream.active ? (
+              /* ESTADO INACTIVO: INFORMAR DÍA Y HORARIO DE LA PRÓXIMA TRANSMISIÓN */
+              <div className="p-6 md:p-10 text-center flex flex-col items-center justify-center">
+                <div className="w-16 h-16 rounded-full bg-dorado/10 border border-dorado/30 flex items-center justify-center text-3xl mb-4 shadow-inner">
+                  📅
+                </div>
+
+                <span className="text-[10px] font-bold text-dorado uppercase tracking-[0.2em] mb-2 block">
+                  Próxima Transmisión en Vivo
+                </span>
+
+                <h3 className="font-display text-2xl md:text-3xl font-extrabold text-white mb-3">
+                  {data.liveStream.scheduledTime || "Domingos a las 09:30 hs"}
+                </h3>
+
+                <p className="text-xs md:text-sm text-texto-muted max-w-md mx-auto mb-6 leading-relaxed">
+                  Actualmente no estamos transmitiendo en directo. Te invitamos a conectarte en nuestro próximo culto para adorar y compartir juntos la Palabra de Dios.
+                </p>
+
+                {/* Tarjeta de Horarios */}
+                <div className="bg-monte/70 rounded-2xl p-5 border border-white/5 w-full text-left mb-6">
+                  <span className="text-[10px] font-bold text-dorado uppercase tracking-wider block mb-3">
+                    Horarios de Reuniones y Transmisiones:
+                  </span>
+                  <div className="flex flex-col gap-2.5 text-xs text-texto">
+                    <div className="flex justify-between border-b border-white/5 pb-2">
+                      <span className="font-semibold text-white">Culto Familiar Dominical:</span>
+                      <span className="text-dorado font-bold">Domingos 09:30 hs</span>
+                    </div>
+                    <div className="flex justify-between border-b border-white/5 pb-2">
+                      <span className="font-semibold text-white">Culto Evangelístico:</span>
+                      <span className="text-dorado font-bold">Domingos 19:00 hs</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-semibold text-white">Estudio Bíblico y Oración:</span>
+                      <span className="text-dorado font-bold">Miércoles 19:30 hs</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-center gap-3 w-full">
+                  <a
+                    href="#mensajes"
+                    onClick={() => setIsLiveModalOpen(false)}
+                    className="bg-dorado hover:bg-dorado/90 text-crema text-xs font-bold uppercase tracking-wider px-6 py-3 rounded-full transition-all shadow-lg hover:scale-105"
+                  >
+                    Ver Predicaciones Anteriores
+                  </a>
+                  <button
+                    onClick={() => setIsLiveModalOpen(false)}
+                    className="border border-white/20 hover:bg-white/5 text-white text-xs font-bold uppercase tracking-wider px-6 py-3 rounded-full transition-all"
+                  >
+                    Entendido / Cerrar
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* ESTADO ACTIVO: REPRODUCTOR EN VIVO */
+              <>
+                {/* Video Player */}
+                {data.liveStream.streamUrl ? (
+                  <div className="aspect-video w-full bg-black">
+                    <iframe
+                      src={getYouTubeEmbedUrl(data.liveStream.streamUrl)}
+                      title="Transmisión en Vivo"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="w-full h-full border-0"
+                    />
+                  </div>
+                ) : (
+                  <div className="p-12 text-center text-sm text-texto-muted">
+                    No hay enlace de transmisión configurado en este momento.
+                  </div>
+                )}
+
+                {/* Footer description */}
+                {data.liveStream.description && (
+                  <div className="p-6 bg-monte/60 border-t border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <p className="text-xs text-texto-muted max-w-xl leading-relaxed">
+                      {data.liveStream.description}
+                    </p>
+
+                    {data.liveStream.streamUrl && (
+                      <a
+                        href={data.liveStream.streamUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-red-600 hover:bg-red-700 text-white font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all flex items-center gap-2 shrink-0 self-start sm:self-auto"
+                      >
+                        Abrir en YouTube
+                      </a>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       )}
