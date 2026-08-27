@@ -50,14 +50,22 @@ export default function AdminPage() {
   // Gallery Photo URL State
   const [photoUrlInput, setPhotoUrlInput] = useState<string>("");
 
-  // Check auth and fetch data on mount instantly
+  // Check auth instantly on mount without blocking screen
   useEffect(() => {
+    // 1. Immediately verify session state
+    let isAuth = false;
     try {
       const storedAuth = typeof window !== 'undefined' ? sessionStorage.getItem("bn_admin_auth") : null;
-      const isAuth = storedAuth === "true";
+      isAuth = storedAuth === "true";
       setIsAuthenticated(isAuth);
-      
-      // Load initial cached data immediately
+    } catch (err) {
+      console.error("Error reading auth session", err);
+    } finally {
+      setCheckingAuth(false);
+    }
+
+    // 2. Load cached data & fetch fresh content in background
+    try {
       const initialData = getCachedDbData();
       setDbData(initialData);
       if (initialData?.verse) {
@@ -74,9 +82,7 @@ export default function AdminPage() {
         fetchContent();
       }
     } catch (err) {
-      console.error("Error initializing admin portal", err);
-    } finally {
-      setCheckingAuth(false);
+      console.error("Error initializing admin content", err);
     }
   }, []);
 

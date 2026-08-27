@@ -170,7 +170,7 @@ export async function getDbDataClient(): Promise<DbData> {
     const db = getDb();
     if (!db) return cachedFallback;
 
-    // Timeout de 4 segundos para evitar que la interfaz quede trabada
+    // Timeout de 1.5 segundos para evitar demoras si la conexión a Firestore es lenta
     const fetchPromise = (async (): Promise<DbData> => {
       // Ejecutar consultas en paralelo simultáneamente
       const [
@@ -269,7 +269,7 @@ export async function getDbDataClient(): Promise<DbData> {
     const timeoutPromise = new Promise<DbData>((resolve) => {
       setTimeout(() => {
         resolve(cachedFallback);
-      }, 4000);
+      }, 1500);
     });
 
     return await Promise.race([fetchPromise, timeoutPromise]);
