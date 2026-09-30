@@ -52,7 +52,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-gradient-to-r from-[#035CB4] via-[#046BD2] to-[#0284C7] text-white shadow-md border-b border-[#0284C7]/40">
+    <header className="sticky top-0 z-50 bg-gradient-to-r from-[#072B61] via-[#09428F] to-[#0B54B8] text-white shadow-lg border-b border-[#072B61]">
       <nav className="mx-auto max-w-6xl px-6 py-3.5 flex items-center justify-between">
         {/* LOGO */}
         <Link href="/" className="flex items-center gap-3 group">
@@ -67,7 +67,7 @@ export default function Navbar() {
             <span className="font-display text-base md:text-lg font-bold text-white leading-none tracking-tight">
               Buenas Nuevas
             </span>
-            <span className="text-[10px] text-sky-200 font-bold tracking-[0.14em] uppercase mt-1 leading-none">
+            <span className="text-[10px] text-sky-300 font-bold tracking-[0.14em] uppercase mt-1 leading-none">
               Para Todos
             </span>
           </div>
@@ -110,7 +110,7 @@ export default function Navbar() {
           
           <Link
             href="/admin"
-            className="text-xs font-bold border-2 border-white text-white hover:bg-white hover:text-[#046BD2] px-4 py-1.5 rounded-full transition-all tracking-wider uppercase flex items-center gap-1.5 shadow-sm"
+            className="text-xs font-bold border-2 border-white text-white hover:bg-white hover:text-[#09428F] px-4 py-1.5 rounded-full transition-all tracking-wider uppercase flex items-center gap-1.5 shadow-sm"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
@@ -158,7 +158,7 @@ export default function Navbar() {
 
       {/* MOBILE MENU */}
       {open && (
-        <div className="md:hidden px-6 pb-6 flex flex-col gap-3.5 border-t border-white/15 pt-4 bg-[#035CB4] text-white shadow-2xl backdrop-blur-xl">
+        <div className="md:hidden px-6 pb-6 flex flex-col gap-3.5 border-t border-white/15 pt-4 bg-[#072B61] text-white shadow-2xl backdrop-blur-xl">
           {/* BOTON EN VIVO DESTACADO EN MOVIL */}
           <Link
             href="/#mensajes"
