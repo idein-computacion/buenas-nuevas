@@ -63,9 +63,9 @@ export default function AdminPage() {
   const [studyForm, setStudyForm] = useState({ title: "", author: defaultPastor, date: today, content: "", pdfUrl: "" });
   const [liveStreamForm, setLiveStreamForm] = useState<LiveStream>({
     active: false,
-    title: "Culto de Adoración y Palabra en Vivo",
+    title: "Streaming en Vivo",
     streamUrl: "https://iptv.ixfo.com.ar:30443/live/ClassicaTvObera/playlist.m3u8",
-    description: "Te damos la bienvenida a nuestra reunión dominical. ¡Alabemos y escuchemos la Palabra de Dios juntos desde cualquier lugar!",
+    description: "Te damos la bienvenida a nuestra transmisión en vivo. ¡Compartí este tiempo con nosotros desde cualquier lugar!",
     scheduledTime: "Domingos 19:30 hs"
   });
   
@@ -531,7 +531,7 @@ export default function AdminPage() {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                     <div>
                       <h2 className="font-display text-xl font-bold text-white flex items-center gap-2">
-                        <span className={`w-3 h-3 rounded-full ${liveStreamForm.active ? "bg-red-500 animate-ping" : "bg-zinc-600"}`} />
+                        <span className={`w-3 h-3 rounded-full ${liveStreamForm.active ? "bg-red-500" : "bg-zinc-600"}`} />
                         Transmisión en Vivo (Streaming)
                       </h2>
                       <p className="text-xs text-texto-muted mt-1">
@@ -545,11 +545,11 @@ export default function AdminPage() {
                       onClick={toggleLiveStatus}
                       className={`px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
                         liveStreamForm.active
-                          ? "bg-red-600 hover:bg-red-700 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]"
+                          ? "bg-red-600 hover:bg-red-700 text-white shadow"
                           : "bg-emerald-800/80 hover:bg-emerald-700 text-emerald-100 border border-emerald-600/40 shadow"
                       }`}
                     >
-                      <span className={`w-2.5 h-2.5 rounded-full ${liveStreamForm.active ? "bg-white animate-pulse" : "bg-emerald-400"}`} />
+                      <span className={`w-2.5 h-2.5 rounded-full ${liveStreamForm.active ? "bg-white" : "bg-emerald-400"}`} />
                       {liveStreamForm.active ? "En Vivo: ACTIVADO (Apagar)" : "En Vivo: APAGADO (Activar)"}
                     </button>
                   </div>

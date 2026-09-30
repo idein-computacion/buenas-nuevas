@@ -46,9 +46,9 @@ if (!file_exists($db_file)) {
         "messages" => [],
         "liveStream" => [
             "active" => true,
-            "title" => "Culto de Adoración y Palabra en Vivo",
+            "title" => "Streaming en Vivo",
             "streamUrl" => "https://iptv.ixfo.com.ar:30443/live/BuenasNuevasTv/playlist.m3u8",
-            "description" => "Te damos la bienvenida a nuestra reunión dominical. ¡Alabemos y escuchemos la Palabra de Dios juntos desde cualquier lugar!",
+            "description" => "Te damos la bienvenida a nuestra transmisión en vivo. ¡Compartí este tiempo con nosotros desde cualquier lugar!",
             "scheduledTime" => "Domingos 19:30 hs"
         ]
     ];

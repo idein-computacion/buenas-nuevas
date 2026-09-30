@@ -89,19 +89,16 @@ export default function Navbar() {
           <Link
             href="/#mensajes"
             onClick={handleLiveClick}
-            className={`text-xs font-bold px-4 py-2 rounded-full transition-all flex items-center gap-2 uppercase tracking-wider ${
+            className={`text-xs font-bold px-4 py-2 rounded-full transition-colors flex items-center gap-2 uppercase tracking-wider ${
               isLive
-                ? "bg-red-600 hover:bg-red-700 text-white shadow-[0_0_20px_rgba(239,68,68,0.6)] animate-pulse"
-                : "bg-white/15 hover:bg-white/25 text-white border border-white/30 backdrop-blur-sm"
+                ? "bg-red-600 hover:bg-red-700 text-white shadow-sm"
+                : "bg-white/15 hover:bg-white/25 text-white border border-white/30"
             }`}
           >
             {isLive ? (
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-90"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
-              </span>
+              <span className="inline-flex rounded-full h-2 w-2 bg-white" />
             ) : (
-              <span className="inline-flex rounded-full h-2 w-2 bg-red-400"></span>
+              <span className="inline-flex rounded-full h-2 w-2 bg-red-400" />
             )}
             Ver En Vivo
           </Link>
@@ -125,19 +122,16 @@ export default function Navbar() {
           <Link
             href="/#mensajes"
             onClick={handleLiveClick}
-            className={`text-[10px] font-bold px-3 py-1.5 rounded-full transition-all flex items-center gap-1.5 uppercase tracking-wider ${
+            className={`text-[10px] font-bold px-3 py-1.5 rounded-full transition-colors flex items-center gap-1.5 uppercase tracking-wider ${
               isLive
-                ? "bg-red-600 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)] animate-pulse"
+                ? "bg-red-600 text-white shadow-sm"
                 : "bg-white/15 text-white border border-white/30"
             }`}
           >
             {isLive ? (
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-90"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
-              </span>
+              <span className="inline-flex rounded-full h-1.5 w-1.5 bg-white" />
             ) : (
-              <span className="inline-flex rounded-full h-1.5 w-1.5 bg-red-400"></span>
+              <span className="inline-flex rounded-full h-1.5 w-1.5 bg-red-400" />
             )}
             En Vivo
           </Link>
@@ -158,24 +152,21 @@ export default function Navbar() {
 
       {/* MOBILE MENU */}
       {open && (
-        <div className="md:hidden px-6 pb-6 flex flex-col gap-3.5 border-t border-white/15 pt-4 bg-[#072B61] text-white shadow-2xl backdrop-blur-xl">
+        <div className="md:hidden px-6 pb-6 flex flex-col gap-3.5 border-t border-white/15 pt-4 bg-[#072B61] text-white shadow-xl">
           {/* BOTON EN VIVO DESTACADO EN MOVIL */}
           <Link
             href="/#mensajes"
             onClick={handleLiveClick}
-            className={`text-xs font-bold px-4 py-3 rounded-full transition-all flex items-center justify-center gap-2 uppercase tracking-wider text-center ${
+            className={`text-xs font-bold px-4 py-3 rounded-full transition-colors flex items-center justify-center gap-2 uppercase tracking-wider text-center ${
               isLive
-                ? "bg-red-600 text-white shadow-md animate-pulse"
+                ? "bg-red-600 text-white shadow-sm"
                 : "bg-white/15 text-white border border-white/30"
             }`}
           >
             {isLive ? (
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-90"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
-              </span>
+              <span className="inline-flex rounded-full h-2 w-2 bg-white" />
             ) : (
-              <span className="inline-flex rounded-full h-2 w-2 bg-red-400"></span>
+              <span className="inline-flex rounded-full h-2 w-2 bg-red-400" />
             )}
             Ver En Vivo
           </Link>

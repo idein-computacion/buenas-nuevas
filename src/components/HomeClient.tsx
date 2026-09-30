@@ -378,7 +378,7 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                 </div>
                 <div>
                   <div className="inline-flex items-center gap-2 bg-red-50 border border-red-200 px-3 py-1 rounded-full text-[10px] font-bold text-red-600 uppercase tracking-widest mb-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
                     Canal Oficial de YouTube
                   </div>
                   <h3 className="font-display text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
@@ -464,9 +464,9 @@ export default function HomeClient({ initialData }: HomeClientProps) {
             {/* MINIATURA DESTACADA DE TRANSMISIÓN EN VIVO */}
             {data.liveStream && (
               <div 
-                className={`glass-card rounded-2xl overflow-hidden group flex flex-col justify-between border transition-all duration-300 bg-white ${
+                className={`rounded-2xl overflow-hidden group flex flex-col justify-between border transition-all duration-200 bg-white ${
                   data.liveStream.active
-                    ? "border-red-500 shadow-[0_0_25px_rgba(239,68,68,0.2)]"
+                    ? "border-red-500 shadow-md"
                     : "border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 cursor-pointer"
                 }`}
               >
@@ -474,10 +474,10 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                   {data.liveStream.active && data.liveStream.streamUrl ? (
                     /* REPRODUCTOR DE VIDEO EN VIVO DIRECTO EN LA VENTANITA */
                     <div className="relative w-full aspect-video bg-black overflow-hidden border-b border-slate-100">
-                      {/* Badge EN VIVO */}
+                      {/* Badge EN VIVO (Ultra liviano y limpio, sin latidos continuos) */}
                       <div className="absolute top-3 left-3 z-20 pointer-events-none">
-                        <span className="text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-lg bg-red-600 text-white animate-pulse">
-                          <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                        <span className="text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow bg-red-600 text-white">
+                          <span className="w-2 h-2 rounded-full bg-white" />
                           En Vivo Ahora
                         </span>
                       </div>
@@ -489,7 +489,7 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                           e.stopPropagation();
                           setIsLiveModalOpen(true);
                         }}
-                        className="absolute top-3 right-3 z-20 bg-black/75 hover:bg-black/90 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg border border-white/20 transition-all flex items-center gap-1 shadow-lg"
+                        className="absolute top-3 right-3 z-20 bg-black/75 hover:bg-black/90 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg border border-white/20 transition-colors flex items-center gap-1 shadow cursor-pointer"
                         title="Ver en pantalla grande"
                       >
                         ⛶ Ampliar
@@ -497,7 +497,7 @@ export default function HomeClient({ initialData }: HomeClientProps) {
 
                       <StreamPlayer
                         url={data.liveStream.streamUrl}
-                        title={data.liveStream.title || "Transmisión en Vivo - Buenas Nuevas"}
+                        title={data.liveStream.title || "Streaming en Vivo - Buenas Nuevas"}
                         className="!border-0 !rounded-none !shadow-none w-full h-full"
                       />
                     </div>
@@ -542,7 +542,7 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                   <div className="p-6">
                     <div className="flex items-start justify-between gap-3">
                       <h3 className="font-display text-base font-bold text-slate-900 leading-snug group-hover:text-tierra transition-colors">
-                        {data.liveStream.title || "Culto en Vivo · Buenas Nuevas"}
+                        {data.liveStream.title || "Streaming en Vivo · Buenas Nuevas"}
                       </h3>
                       {data.liveStream.active && (
                         <button
@@ -1041,18 +1041,18 @@ export default function HomeClient({ initialData }: HomeClientProps) {
       {isLiveModalOpen && data.liveStream && (
         <div 
           onClick={() => setIsLiveModalOpen(false)}
-          className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-950/80 p-3 sm:p-6 backdrop-blur-md animate-fade-in overflow-y-auto"
+          className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-950/90 p-3 sm:p-6 overflow-y-auto"
         >
           <div 
             onClick={(e) => e.stopPropagation()}
             className={`relative w-full ${
-              data.liveStream.active ? "max-w-4xl border-red-500/50 shadow-2xl" : "max-w-xl border-slate-200 shadow-2xl"
+              data.liveStream.active ? "max-w-4xl border-slate-700 shadow-xl" : "max-w-xl border-slate-200 shadow-xl"
             } bg-white rounded-3xl overflow-hidden border max-h-[92vh] flex flex-col my-auto text-slate-800`}
           >
             {/* Header Modal - SIEMPRE VISIBLE Y FIJO AL PRINCIPIO */}
             <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50 shrink-0 sticky top-0 z-30">
               <div className="flex items-center gap-3">
-                <span className={`w-3 h-3 rounded-full ${data.liveStream.active ? "bg-red-500 animate-ping" : "bg-slate-400"}`} />
+                <span className={`w-2.5 h-2.5 rounded-full ${data.liveStream.active ? "bg-red-600" : "bg-slate-400"}`} />
                 <div>
                   <span className={`text-[10px] font-bold uppercase tracking-[0.2em] block ${
                     data.liveStream.active ? "text-red-600" : "text-slate-500"
@@ -1060,7 +1060,7 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                     {data.liveStream.active ? "● En Vivo Ahora" : "Transmisión Fuera de Línea"}
                   </span>
                   <h3 className="font-display text-base md:text-lg font-bold text-slate-900 leading-tight">
-                    {data.liveStream.active ? (data.liveStream.title || "Culto en Vivo · Iglesia Buenas Nuevas") : "Información de Transmisión"}
+                    {data.liveStream.active ? (data.liveStream.title || "Streaming en Vivo · Buenas Nuevas") : "Información de Transmisión"}
                   </h3>
                 </div>
               </div>
@@ -1093,7 +1093,7 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                   </h3>
 
                   <p className="text-xs md:text-sm text-slate-600 max-w-md mx-auto mb-5 leading-relaxed">
-                    Actualmente no estamos transmitiendo en directo. Te invitamos a conectarte en nuestro próximo culto para adorar y compartir juntos la Palabra de Dios.
+                    Actualmente no estamos transmitiendo en directo. Te invitamos a conectarte a nuestra próxima transmisión.
                   </p>
 
                   {/* Tarjeta de Horarios */}
@@ -1136,7 +1136,7 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                     <div className="w-full">
                       <StreamPlayer
                         url={data.liveStream.streamUrl}
-                        title={data.liveStream.title || "Transmisión en Vivo - Iglesia Buenas Nuevas"}
+                        title={data.liveStream.title || "Streaming en Vivo - Buenas Nuevas"}
                       />
                     </div>
                   ) : (
