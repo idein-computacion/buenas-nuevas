@@ -1,0 +1,65 @@
+# ==============================================================================
+# Buenas Nuevas - Configuración Apache para Servidor Ferozo (DonWeb) / Producción
+# ==============================================================================
+
+# 1. Seguridad: Impedir que se liste el contenido de directorios
+Options -Indexes
+
+# 2. Protección de db.json (evitar que se descargue la base de datos por HTTP)
+# El archivo db.json solo debe ser leído y modificado internamente por api.php
+<Files "db.json">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</Files>
+
+# 3. Reglas de Reescritura de URLs
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Forzar HTTPS (recomendado con SSL activo en Ferozo)
+  RewriteCond %{HTTPS} off
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # Si el archivo o directorio existe físicamente (ej: /api.php, imágenes, css, js), servirlo directo
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Ruta directa para el panel de administración
+  RewriteRule ^admin/?$ /admin/index.html [L]
+
+  # Si existe un archivo .html directo correspondiente a la ruta
+  RewriteCond %{REQUEST_FILENAME}.html -f
+  RewriteRule ^(.+)$ $1.html [L]
+
+  # SPA Fallback: cualquier otra ruta interna que no sea archivo se redirige al index.html
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ /index.html [L]
+</IfModule>
+
+# 4. Compresión Gzip (mod_deflate) para máxima velocidad de carga
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json image/svg+xml
+</IfModule>
+
+# 5. Caché de archivos estáticos (mod_expires)
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/jpeg "access plus 1 month"
+  ExpiresByType image/png "access plus 1 month"
+  ExpiresByType image/webp "access plus 1 month"
+  ExpiresByType image/x-icon "access plus 1 year"
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType application/javascript "access plus 1 month"
+  ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>
+
+# 6. Página de error 404 personalizada
+ErrorDocument 404 /404.html

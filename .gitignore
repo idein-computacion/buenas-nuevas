@@ -1,8 +1,11 @@
 .next/
+.next-build/
 node_modules/
 out/
+dist-ferozo/
 build/
+*.zip
 .env
-.DS_Store
 .env.local
+.DS_Store
 .firebase/

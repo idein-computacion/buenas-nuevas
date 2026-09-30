@@ -38,7 +38,7 @@ export default function Footer() {
             <br />
             Oberá, Misiones, Argentina
             <br />
-            <span className="text-texto/60 mt-1 block">📞 Tel: 03755 42-2319</span>
+            <a href="tel:+543755629896" className="text-texto/60 hover:text-dorado mt-1 block transition-colors">📞 Tel: 3755 629896</a>
           </p>
           <a
             href="https://www.google.com/maps/search/?api=1&query=Mens%C3%BA+1177+Ober%C3%A1+Misiones"
@@ -76,7 +76,7 @@ export default function Footer() {
               <img src="/social-ig.png" alt="Instagram" className="w-full h-full object-contain" />
             </a>
             <a
-              href="https://wa.me/543755422319"
+              href="https://wa.me/5493755629896"
               target="_blank"
               rel="noopener noreferrer"
               className="w-10 h-10 flex items-center justify-center transition-all hover:scale-110 p-0.5"
@@ -85,11 +85,11 @@ export default function Footer() {
               <img src="/social-wa.png" alt="WhatsApp" className="w-full h-full object-contain" />
             </a>
             <a
-              href="https://www.youtube.com/channel/UCHJigZ0DrVc3pcxg1wQFLMw"
+              href="https://www.youtube.com/@iglesiabuenasnuevasparatodos"
               target="_blank"
               rel="noopener noreferrer"
               className="w-10 h-10 flex items-center justify-center transition-all hover:scale-110 p-0.5"
-              title="YouTube"
+              title="YouTube (@iglesiabuenasnuevasparatodos)"
             >
               <img src="/social-yt.png" alt="YouTube" className="w-full h-full object-contain" />
             </a>

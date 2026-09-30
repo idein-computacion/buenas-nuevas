@@ -1,115 +1,279 @@
 {
-  "verse": {
-    "text": "Porque de tal manera amó Dios al mundo, que ha dado a su Hijo unigénito, para que todo aquel que en él cree, no se pierda, mas tenga vida eterna.",
-    "reference": "Juan 3:16"
-  },
-  "events": [
-    {
-      "id": "event-1",
-      "title": "Retiro de Jóvenes 2026",
-      "date": "2026-08-14",
-      "time": "18:00 hs",
-      "description": "Un fin de semana especial de comunión, alabanza y búsqueda de Dios en Panambí. ¡Inscribite ya!",
-      "category": "Jóvenes"
+    "verse": {
+        "text": "Tomen el casco de la salvación y la espada del Espíritu, que es la palabra de Dios\n",
+        "reference": "Efesios 6:17"
     },
-    {
-      "id": "event-2",
-      "title": "Campaña Solidaria de Invierno",
-      "date": "2026-07-25",
-      "time": "09:00 hs",
-      "description": "Recolección de ropa de abrigo y alimentos no perecederos para las familias del barrio Yerbal.",
-      "category": "Social"
-    },
-    {
-      "id": "event-3",
-      "title": "Almuerzo Familiar de Confraternidad",
-      "date": "2026-08-02",
-      "time": "12:30 hs",
-      "description": "Compartimos un almuerzo especial todos juntos. Traer cubiertos y algo para compartir en la sobremesa.",
-      "category": "Comunidad"
+    "schedules": [
+        {
+            "id": "sch-1",
+            "dia": "Martes",
+            "hora": "18:00 a 20:00 hs",
+            "titulo": "\"NewCom\" para adultos mayores",
+            "desc": "Lugar: C.A.M. (Lavalle 1660)"
+        },
+        {
+            "id": "sch-2",
+            "dia": "Miércoles",
+            "hora": "07:00 hs",
+            "titulo": "Reunión de Oración e Intercesión",
+            "desc": "Lugar: Edificio Fundacional (Rincón y Reconquista)"
+        },
+        {
+            "id": "sch-3",
+            "dia": "Miércoles",
+            "hora": "20:00 hs",
+            "titulo": "Reunión de Alabanza, Oración y Estudio de la Palabra",
+            "desc": "Lugar habitual: El Mensú 1177"
+        },
+        {
+            "id": "sch-4",
+            "dia": "Viernes",
+            "hora": "20:00 hs",
+            "titulo": "Voley para Jóvenes",
+            "desc": "Lugar: C.A.M. (Lavalle 1660)"
+        },
+        {
+            "id": "sch-5",
+            "dia": "Sábados",
+            "hora": "09:30 hs",
+            "titulo": "\"Pequeños Exploradores\" para niños de 4 a 12 años",
+            "desc": "Lugar: C.A.M. (Lavalle 1660)"
+        },
+        {
+            "id": "sch-6",
+            "dia": "Domingos",
+            "hora": "19:30 hs",
+            "titulo": "Celebramos al Señor en Familia",
+            "desc": "Lugar habitual: El Mensú 1177"
+        },
+        {
+            "dia": "Sábados",
+            "hora": "20 hs.",
+            "titulo": "Reunión de Jóvenes",
+            "desc": "Lugar: El Mensú 1177",
+            "id": "sch-1788958957071"
+        },
+        {
+            "dia": "Sábados por medio",
+            "hora": "18:00 hs.",
+            "titulo": "\"Generación de Fuego\"  para todos los Adolescentes de 12 a 17 años.",
+            "desc": "Lugar: en el Edificio Fundacional (Rincón y Reconquista)",
+            "id": "sch-1788959559028"
+        }
+    ],
+    "events": [
+        {
+            "title": "Proyección del Episodio 1 de la Temporada 6 \"The Chosen\"",
+            "date": "2026-10-03",
+            "time": "20 hs.",
+            "description": "¡MÍRALO PRIMERO!\nEl miedo y la confusión se apoderan de los discípulos , mientras intentan comprender el arresto de Jesús y\nla traición de Judas. Mientras luchan por permanecer unidos, Nicodemo se enfrenta solo al Sumo Sacerdote en una fuerte confrontación que sume al consejo en el caos.\n\nÚnete a nosotros en esta experiencia especial de acceso anticipado para ver \"el Episodio 1 de la Temporada 6 de The Chosen\".\n",
+            "category": "Comunidad",
+            "imageUrl": "/uploads/1790436483_5e9a4f3a.png",
+            "id": "1790436491059"
+        },
+        {
+            "title": "Instituto de Capacitación L.E.F.",
+            "date": "2026-10-04",
+            "time": "10 hs.",
+            "description": "Tendremos el último encuentro 2026 de Nuestro Instituto de Capacitación en Liderazgo. En el Edificio Fundacional",
+            "category": "Estudio",
+            "imageUrl": "",
+            "id": "1790459872945"
+        },
+        {
+            "title": "Cena del Señor",
+            "date": "2026-10-04",
+            "time": "19:30 hs.",
+            "description": "Celebramos juntos la Cena del Señor en nuestro Culto Principal de las 19:30 hs.",
+            "category": "Comunidad",
+            "imageUrl": "",
+            "id": "1790459922978"
+        },
+        {
+            "title": "Encuentro Especial de Intercesión",
+            "date": "2026-10-08",
+            "time": "18 hs.",
+            "description": "En nuestro Edificio Fundacional",
+            "category": "Comunidad",
+            "imageUrl": "",
+            "id": "1790713260291"
+        },
+        {
+            "title": "Feria Americana en el C.A.M.",
+            "date": "2026-10-10",
+            "time": "9 hs.",
+            "description": "Ministerio \"Manos abiertas\" realiza la Feria Americana con el doble propósito de bendecir a las personas con el acceso a comprar prendas a muy bajo costo y con lo recaudado se reutiliza para bendecir a gente necesitada a través del área de \"Acción Social\".",
+            "category": "Social",
+            "imageUrl": "",
+            "id": "1790713522942"
+        },
+        {
+            "title": "Charla de Prevensión y Concientización sobre el Cáncer de mama (Lalcec)",
+            "date": "2026-10-15",
+            "time": "19 hs.",
+            "description": "En nuestro Auditorio Principal de calle El Mensú 1177",
+            "category": "Social",
+            "imageUrl": "",
+            "id": "1790713671626"
+        },
+        {
+            "title": "Actividad Juvenil en el Camping de la Iglesia",
+            "date": "2026-10-17",
+            "time": "15:30 hs.",
+            "description": "Encuentro especial del Ministerio Juvenil en el Camping de la Iglesia.",
+            "category": "Comunidad",
+            "imageUrl": "",
+            "id": "1790714546510"
+        },
+        {
+            "title": "Primeros Pasos - Curso de Discipulado 1",
+            "date": "2026-10-18",
+            "time": "10 hs.",
+            "description": "En las instalaciones del Edificio Fundacional. Rincón y Reconquista.",
+            "category": "Estudio",
+            "imageUrl": "",
+            "id": "1790714669284"
+        },
+        {
+            "title": "Festejamos el Día de la Madre",
+            "date": "2026-10-18",
+            "time": "19:30 hs.",
+            "description": "En el Auditorio Principal. El Mensú 1177",
+            "category": "Comunidad",
+            "imageUrl": "",
+            "id": "1790714710132"
+        },
+        {
+            "title": "En Voz Alta (Streaming)",
+            "date": "2026-10-20",
+            "time": "21 hs.",
+            "description": "Tendremos nuestro Segundo Programa en Vivo que podés seguir desde nuestra página web iglesiabuenasnuevas.com.ar . Será un programa especial sobre \"porque no celebramos el Halloween\" y en su lugar celebramos la Fiesta de la Luz.",
+            "category": "Social",
+            "imageUrl": "",
+            "id": "1790714892104"
+        },
+        {
+            "title": "Entrenamiento en Evangelismo Urbano - Comisionados",
+            "date": "2026-10-22",
+            "time": "20 hs.",
+            "description": "El lugar será a Confirmar. Tendremos un tiempo especial de unidad con las Iglesias de la Ciudad y el Ministerio de Comisionados.",
+            "category": "Comunidad",
+            "imageUrl": "",
+            "id": "1790714968487"
+        },
+        {
+            "title": "Entrenamiento en Evangelismo Urbano - Comisionados",
+            "date": "2026-10-23",
+            "time": "9 hs.",
+            "description": "Encuentro de Pastores y Líderes con el Equipo de Comisionados (lugar a Confirmar)",
+            "category": "Comunidad",
+            "imageUrl": "",
+            "id": "1790715027877"
+        },
+        {
+            "title": "Entrenamiento en Evangelismo Urbano - Comisionados",
+            "date": "2026-10-23",
+            "time": "20 hs.",
+            "description": "Talleres de Capacitación del Ministerio Comisionados. (lugar a Confirmar)",
+            "category": "Comunidad",
+            "imageUrl": "",
+            "id": "1790715082158"
+        },
+        {
+            "title": "Entrenamiento en Evangelismo Urbano - Comisionados",
+            "date": "2026-10-24",
+            "time": "16 hs.",
+            "description": "Evangelismo Urbano",
+            "category": "Comunidad",
+            "imageUrl": "",
+            "id": "1790715531747"
+        },
+        {
+            "title": "\"Noche de Milagros\"",
+            "date": "2026-10-24",
+            "time": "20 hs.",
+            "description": "Noche de Evangelismo y Milagros en la Plaza San Martín con todas las Iglesias de Oberá.",
+            "category": "Comunidad",
+            "imageUrl": "",
+            "id": "1790715578603"
+        },
+        {
+            "title": "Primeros Pasos - Curso de Discipulado 2",
+            "date": "2026-10-25",
+            "time": "10 hs.",
+            "description": "En las instalaciones del Edificio Fundacional. Rincón y Reconquista.",
+            "category": "Comunidad",
+            "imageUrl": "",
+            "id": "1790715629567"
+        },
+        {
+            "title": "Actividad Especial en el Hogar de Día",
+            "date": "2026-09-29",
+            "time": "9 hs.",
+            "description": "Tendemos una actividad especial para los adolescentes del Hogar de Día. Estemos orando por quienes estarán llevando el mensaje de las Buenas Nuevas todos los adolescentes del Hogar.\n",
+            "category": "Social",
+            "imageUrl": "",
+            "id": "1790715688696"
+        },
+        {
+            "title": "Fiesta de la Luz \"Octubrillante en la Ciudad de Oberá\"",
+            "date": "2026-10-31",
+            "time": "19 hs.",
+            "description": "Gran Fiesta de Celebración al Señor en el Centro de la Ciudad, en unidad con todas las Iglesias de Oberá.",
+            "category": "Comunidad",
+            "imageUrl": "",
+            "id": "1790715729030"
+        }
+    ],
+    "sermons": [
+        {
+            "title": "Primer Programa en Vivo \"En Voz Alta\" Abordamos la Prevensión del Sui.....",
+            "preacher": "Pastor Pablo Garay",
+            "date": "2026-09-26",
+            "videoUrl": "https://www.youtube.com/watch?v=gqzpSQIFp8w&rco=1",
+            "duration": "1 hora 12 min",
+            "id": "1790435337284"
+        }
+    ],
+    "podcasts": [
+        {
+            "title": "El Costo del discipulado",
+            "speaker": "Pastor Abel Arévalo",
+            "date": "2026-09-16",
+            "audioUrl": "/uploads/1789563580_a4c74d1d.mp3",
+            "duration": "7 min  18 seg",
+            "id": "1789563592408"
+        }
+    ],
+    "studies": [],
+    "gallery": [
+        "/uploads/1789685777_4d92a938.jpg",
+        "/uploads/1789685807_a2e722be.jpg",
+        "/uploads/1789685826_c4c983c4.jpg",
+        "/uploads/1789685840_7fb20f2e.jpg",
+        "/uploads/1789685858_6d6615d4.jpg",
+        "/uploads/1789685873_936d8285.jpg",
+        "/uploads/1789685888_8e775f4e.jpg",
+        "/uploads/1789685909_84dbda75.jpg",
+        "/uploads/1789685925_83923378.jpg",
+        "/uploads/1789685945_dd833461.jpg",
+        "/uploads/1789685993_282b9245.jpg",
+        "/uploads/1789686011_ddb207a4.jpg",
+        "/uploads/1789686024_beca8f45.jpg",
+        "/uploads/1789686038_37f92937.jpg",
+        "/uploads/1789686058_b9119384.jpg",
+        "/uploads/1789686072_8963ea62.jpg",
+        "/uploads/1789686086_7c12811a.jpg",
+        "/uploads/1789686130_a4a7e75f.jpg",
+        "/uploads/1789686144_f922ae60.jpg",
+        "/uploads/1789686157_9665f587.jpg"
+    ],
+    "messages": [],
+    "liveStream": {
+        "active": true,
+        "title": "Culto de Adoración y Palabra en Vivo",
+        "streamUrl": "https://iptv.ixfo.com.ar:30443/live/BuenasNuevasTv/playlist.m3u8",
+        "description": "Te damos la bienvenida a nuestra reunión dominical. ¡Alabemos y escuchemos la Palabra de Dios juntos desde cualquier lugar!",
+        "scheduledTime": "Domingos 19:30 hs"
     }
-  ],
-  "sermons": [
-    {
-      "id": "sermon-1",
-      "title": "Caminando en Fe en Tiempos de Incertidumbre",
-      "preacher": "Pastor Daniel Canclini",
-      "date": "2026-07-12",
-      "videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      "duration": "45 min"
-    },
-    {
-      "id": "sermon-2",
-      "title": "El Poder de la Gracia Transformadora",
-      "preacher": "Pastora Marta Gómez",
-      "date": "2026-07-05",
-      "videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      "duration": "38 min"
-    },
-    {
-      "id": "sermon-3",
-      "title": "Restaurando la Familia en el Altar de Dios",
-      "preacher": "Pastor Daniel Canclini",
-      "date": "2026-06-28",
-      "videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      "duration": "50 min"
-    }
-  ],
-  "podcasts": [
-    {
-      "id": "podcast-1",
-      "title": "Reflexiones Diarias: La Paz de Dios",
-      "speaker": "Pastor Daniel Canclini",
-      "date": "2026-07-13",
-      "audioUrl": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-      "duration": "12 min"
-    },
-    {
-      "id": "podcast-2",
-      "title": "Conversaciones de Fe: El Perdón",
-      "speaker": "Coordinador Lucas Silva",
-      "date": "2026-07-06",
-      "audioUrl": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
-      "duration": "18 min"
-    }
-  ],
-  "studies": [
-    {
-      "id": "study-1",
-      "title": "Introducción al Estudio de Romanos",
-      "author": "Pastor Daniel Canclini",
-      "date": "2026-07-10",
-      "content": "Este estudio bíblico de 4 partes nos introduce a los temas principales de la epístola a los Romanos: la justificación por fe, la gracia redentora y nuestra vida de obediencia. Es ideal para células y grupos pequeños."
-    },
-    {
-      "id": "study-2",
-      "title": "Los Nombres de Dios y su Significado",
-      "author": "Líder de Educación Bíblica",
-      "date": "2026-06-20",
-      "content": "Un análisis profundo de los nombres hebreos de Dios en el Antiguo Testamento (Yahweh, El Shaddai, Adonai) y cómo revelan su carácter y cuidado por su pueblo."
-    }
-  ],
-  "gallery": [
-    "https://images.unsplash.com/photo-1519406596751-0a3ccc4937fe?w=800&q=80",
-    "https://images.unsplash.com/photo-1515162305285-0293e4767cc2?w=800&q=80",
-    "https://images.unsplash.com/photo-1490122417551-6ee9691429d0?w=800&q=80",
-    "/uploads/1784052791768-396436704-729451671_18326948689259853_1195708044839511382_n.jpg"
-  ],
-  "messages": [
-    {
-      "id": "msg-1784054465673",
-      "name": "Pedro",
-      "phone": "3754406435",
-      "message": "Pido oración por mi",
-      "date": "2026-07-14T18:41:05.673Z",
-      "read": false
-    }
-  ],
-  "liveStream": {
-    "active": false,
-    "title": "Culto de Adoración y Palabra en Vivo",
-    "streamUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    "description": "Te damos la bienvenida a nuestra reunión dominical. ¡Alabemos y escuchemos la Palabra de Dios juntos desde cualquier lugar!",
-    "scheduledTime": "Domingos 09:30 hs"
-  }
 }

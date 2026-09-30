@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { getCachedDbData, getDbDataClient, subscribeToLiveStreamClient } from "@/lib/firestoreClient";
+import { getCachedDbData, getDbDataClient, subscribeToLiveStreamClient } from "@/lib/apiClient";
 
 const LINKS = [
   { href: "/#inicio", label: "Inicio" },
@@ -92,7 +92,7 @@ export default function Navbar() {
             className={`text-xs font-bold px-4 py-2 rounded-full transition-all flex items-center gap-2 uppercase tracking-wider ${
               isLive
                 ? "bg-red-600 hover:bg-red-700 text-white shadow-[0_0_25px_rgba(239,68,68,0.75)] animate-pulse border border-red-500"
-                : "bg-monte-dark/60 hover:bg-monte text-texto-muted/70 hover:text-white border border-white/10 opacity-75 hover:opacity-100"
+                : "bg-monte-dark/60 hover:bg-monte text-texto-muted/70 hover:text-white border border-red-500/50 hover:border-red-500 opacity-75 hover:opacity-100"
             }`}
           >
             {isLive ? (
@@ -106,21 +106,13 @@ export default function Navbar() {
             Ver En Vivo
           </Link>
           
-          <div className="h-4 w-px bg-white/10" />
-
-          {/* PANEL ACCESS */}
+          <div className="h-4 w-px bg-white/10"></div>
+          
           <Link
             href="/admin"
             className="text-xs font-semibold border border-texto/30 hover:border-dorado text-texto hover:text-dorado px-4 py-2 rounded transition-colors tracking-wide uppercase flex items-center gap-1.5"
           >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              fill="none" 
-              viewBox="0 0 24 24" 
-              strokeWidth={2} 
-              stroke="currentColor" 
-              className="w-3.5 h-3.5"
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
             </svg>
             Acceso
@@ -136,7 +128,7 @@ export default function Navbar() {
             className={`text-[10px] font-bold px-3 py-1.5 rounded-full transition-all flex items-center gap-1.5 uppercase tracking-wider ${
               isLive
                 ? "bg-red-600 text-white shadow-[0_0_18px_rgba(239,68,68,0.7)] animate-pulse border border-red-500"
-                : "bg-monte-dark/60 text-texto-muted/70 border border-white/10 opacity-75"
+                : "bg-monte-dark/60 text-texto-muted/70 border border-red-500/50 opacity-75"
             }`}
           >
             {isLive ? (
@@ -174,7 +166,7 @@ export default function Navbar() {
             className={`text-xs font-bold px-4 py-3 rounded-xl transition-all flex items-center justify-center gap-2 uppercase tracking-wider text-center ${
               isLive
                 ? "bg-red-600 text-white shadow-[0_0_25px_rgba(239,68,68,0.7)] animate-pulse border border-red-500"
-                : "bg-monte-dark/60 text-texto-muted/70 border border-white/10 opacity-80"
+                : "bg-monte-dark/60 text-texto-muted/70 border border-red-500/50 opacity-80"
             }`}
           >
             {isLive ? (
@@ -198,23 +190,16 @@ export default function Navbar() {
               {l.label}
             </Link>
           ))}
-          <div className="h-px bg-white/5 my-2" />
+          
           <Link
             href="/admin"
             onClick={() => setOpen(false)}
-            className="text-sm font-semibold text-dorado border border-dorado/30 hover:border-dorado px-4 py-2.5 rounded text-center transition-colors uppercase tracking-wider flex items-center justify-center gap-2"
+            className="text-sm font-semibold text-dorado tracking-wide uppercase flex items-center gap-2 mt-2 pt-4 border-t border-white/5"
           >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              fill="none" 
-              viewBox="0 0 24 24" 
-              strokeWidth={2} 
-              stroke="currentColor" 
-              className="w-4 h-4"
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
             </svg>
-            Acceso Panel
+            Acceso Admin
           </Link>
         </div>
       )}

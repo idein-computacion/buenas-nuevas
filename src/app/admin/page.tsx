@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { DbData, EventItem, Sermon, Podcast, Study, LiveStream } from "@/lib/db";
+import FileUpload from "@/components/FileUpload";
+import { DbData, EventItem, Sermon, Podcast, Study, LiveStream, ScheduleItem, defaultSchedules } from "@/lib/db";
 import { 
   getDbDataClient, 
   getCachedDbData,
@@ -16,9 +17,10 @@ import {
   deleteMessageClient 
 } from "@/lib/firestoreClient";
 import { triggerPdfDownload } from "@/lib/pdfHelper";
-import { getYouTubeEmbedUrl } from "@/lib/youtube";
+import { getYouTubeEmbedUrl, cleanStreamUrl } from "@/lib/youtube";
+import StreamPlayer from "@/components/StreamPlayer";
 
-type TabType = "verse" | "events" | "sermons" | "podcasts" | "studies" | "gallery" | "messages" | "livestream";
+type TabType = "verse" | "schedules" | "events" | "sermons" | "podcasts" | "studies" | "gallery" | "messages" | "livestream";
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -33,20 +35,44 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<TabType>("verse");
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
+  const today = new Date().toISOString().split('T')[0];
+  const defaultPastor = "Pastor Pablo Garay";
+
+  const formatDisplayDate = (dateStr: string) => {
+    if (!dateStr) return "";
+    const clean = dateStr.split("T")[0];
+    const parts = clean.split("-");
+    if (parts.length === 3 && parts[0].length === 4) {
+      const [year, month, day] = parts;
+      return `${day.padStart(2, "0")}/${month.padStart(2, "0")}/${year}`;
+    }
+    const dateObj = new Date(dateStr.includes("T") ? dateStr : `${dateStr}T12:00:00`);
+    if (isNaN(dateObj.getTime())) return dateStr;
+    const day = String(dateObj.getDate()).padStart(2, "0");
+    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const year = dateObj.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
   // Form States
   const [verseForm, setVerseForm] = useState({ text: "", reference: "" });
-  const [eventForm, setEventForm] = useState({ title: "", date: "", time: "", description: "", category: "Comunidad" });
-  const [sermonForm, setSermonForm] = useState({ title: "", preacher: "", date: "", videoUrl: "", duration: "" });
-  const [podcastForm, setPodcastForm] = useState({ title: "", speaker: "", date: "", audioUrl: "", duration: "" });
-  const [studyForm, setStudyForm] = useState({ title: "", author: "", date: "", content: "", pdfUrl: "" });
+  const [eventForm, setEventForm] = useState({ title: "", date: today, time: "", description: "", category: "Comunidad", imageUrl: "" });
+  const [editingEventId, setEditingEventId] = useState<string | null>(null);
+  const [sermonForm, setSermonForm] = useState({ title: "", preacher: defaultPastor, date: today, videoUrl: "", duration: "" });
+  const [podcastForm, setPodcastForm] = useState({ title: "", speaker: defaultPastor, date: today, audioUrl: "", duration: "" });
+  const [studyForm, setStudyForm] = useState({ title: "", author: defaultPastor, date: today, content: "", pdfUrl: "" });
   const [liveStreamForm, setLiveStreamForm] = useState<LiveStream>({
     active: false,
     title: "Culto de Adoración y Palabra en Vivo",
-    streamUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    streamUrl: "https://iptv.ixfo.com.ar:30443/live/ClassicaTvObera/playlist.m3u8",
     description: "Te damos la bienvenida a nuestra reunión dominical. ¡Alabemos y escuchemos la Palabra de Dios juntos desde cualquier lugar!",
-    scheduledTime: "Domingos 09:30 hs"
+    scheduledTime: "Domingos 19:30 hs"
   });
   
+  // Schedule Form State
+  const [scheduleForm, setScheduleForm] = useState({ dia: "Miércoles", hora: "", titulo: "", desc: "" });
+  const [editingScheduleId, setEditingScheduleId] = useState<string | null>(null);
+
   // Gallery Photo URL State
   const [photoUrlInput, setPhotoUrlInput] = useState<string>("");
 
@@ -67,15 +93,20 @@ export default function AdminPage() {
     // 2. Load cached data & fetch fresh content in background
     try {
       const initialData = getCachedDbData();
-      setDbData(initialData);
-      if (initialData?.verse) {
-        setVerseForm({
-          text: initialData.verse.text || "",
-          reference: initialData.verse.reference || ""
-        });
-      }
-      if (initialData?.liveStream) {
-        setLiveStreamForm(initialData.liveStream);
+      if (initialData) {
+        if (!initialData.schedules || initialData.schedules.length === 0) {
+          initialData.schedules = defaultSchedules;
+        }
+        setDbData(initialData);
+        if (initialData.verse) {
+          setVerseForm({
+            text: initialData.verse.text || "",
+            reference: initialData.verse.reference || ""
+          });
+        }
+        if (initialData.liveStream) {
+          setLiveStreamForm(initialData.liveStream);
+        }
       }
 
       if (isAuth) {
@@ -90,6 +121,9 @@ export default function AdminPage() {
     try {
       const data = await getDbDataClient();
       if (data) {
+        if (!data.schedules || data.schedules.length === 0) {
+          data.schedules = defaultSchedules;
+        }
         setDbData(data);
         if (data.verse) {
           setVerseForm({
@@ -181,44 +215,118 @@ export default function AdminPage() {
     handleContentAction("updateVerse", { verse: verseForm });
   };
 
-  const saveLiveStream = (e: React.FormEvent) => {
+  const saveLiveStream = async (e: React.FormEvent) => {
     e.preventDefault();
-    handleContentAction("updateLiveStream", { liveStream: liveStreamForm });
+    await handleContentAction("updateLiveStream", { liveStream: liveStreamForm });
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("livestream-updated", { detail: liveStreamForm }));
+      localStorage.setItem("bn_livestream_sync", JSON.stringify(liveStreamForm));
+    }
   };
 
   const toggleLiveStatus = async () => {
     const updated = { ...liveStreamForm, active: !liveStreamForm.active };
     setLiveStreamForm(updated);
     await handleContentAction("updateLiveStream", { liveStream: updated });
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("livestream-updated", { detail: updated }));
+      localStorage.setItem("bn_livestream_sync", JSON.stringify(updated));
+    }
   };
 
-  const addEvent = (e: React.FormEvent) => {
+  const saveEvent = (e: React.FormEvent) => {
     e.preventDefault();
-    handleContentAction("saveItem", { type: "events", item: eventForm });
-    setEventForm({ title: "", date: "", time: "", description: "", category: "Comunidad" });
+    const itemToSave = editingEventId
+      ? { ...eventForm, id: editingEventId }
+      : eventForm;
+    handleContentAction("saveItem", { type: "events", item: itemToSave });
+    setEventForm({ title: "", date: today, time: "", description: "", category: "Comunidad", imageUrl: "" });
+    setEditingEventId(null);
+  };
+
+  const handleEditEvent = (item: EventItem) => {
+    setEventForm({
+      title: item.title,
+      date: item.date,
+      time: item.time,
+      description: item.description,
+      category: item.category,
+      imageUrl: item.imageUrl || ""
+    });
+    setEditingEventId(item.id);
+    const formElement = document.getElementById("event-form-container");
+    if (formElement) {
+      formElement.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const handleCancelEditEvent = () => {
+    setEventForm({ title: "", date: today, time: "", description: "", category: "Comunidad", imageUrl: "" });
+    setEditingEventId(null);
   };
 
   const addSermon = (e: React.FormEvent) => {
     e.preventDefault();
     handleContentAction("saveItem", { type: "sermons", item: sermonForm });
-    setSermonForm({ title: "", preacher: "", date: "", videoUrl: "", duration: "" });
+    setSermonForm({ title: "", preacher: defaultPastor, date: today, videoUrl: "", duration: "" });
   };
 
   const addPodcast = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!podcastForm.audioUrl) {
+      showStatus("error", "Falta el audio. Subí un archivo (y esperá a que termine) o pegá una URL externa.");
+      return;
+    }
     handleContentAction("saveItem", { type: "podcasts", item: podcastForm });
-    setPodcastForm({ title: "", speaker: "", date: "", audioUrl: "", duration: "" });
+    setPodcastForm({ title: "", speaker: defaultPastor, date: today, audioUrl: "", duration: "" });
   };
 
   const addStudy = (e: React.FormEvent) => {
     e.preventDefault();
     handleContentAction("saveItem", { type: "studies", item: studyForm });
-    setStudyForm({ title: "", author: "", date: "", content: "", pdfUrl: "" });
+    setStudyForm({ title: "", author: defaultPastor, date: today, content: "", pdfUrl: "" });
   };
 
-  const deleteItem = (type: "events" | "sermons" | "podcasts" | "studies", id: string) => {
+  const saveSchedule = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!scheduleForm.dia || !scheduleForm.hora || !scheduleForm.titulo) {
+      showStatus("error", "Por favor completá día, horario y título de la reunión.");
+      return;
+    }
+    const itemToSave = editingScheduleId
+      ? { ...scheduleForm, id: editingScheduleId }
+      : { ...scheduleForm, id: "sch-" + Date.now() };
+
+    handleContentAction("saveItem", { type: "schedules", item: itemToSave });
+    setScheduleForm({ dia: "Miércoles", hora: "", titulo: "", desc: "" });
+    setEditingScheduleId(null);
+  };
+
+  const handleEditSchedule = (item: ScheduleItem) => {
+    setScheduleForm({ dia: item.dia, hora: item.hora, titulo: item.titulo, desc: item.desc || "" });
+    setEditingScheduleId(item.id);
+  };
+
+  const handleCancelEditSchedule = () => {
+    setScheduleForm({ dia: "Miércoles", hora: "", titulo: "", desc: "" });
+    setEditingScheduleId(null);
+  };
+
+  const deleteSchedule = (id: string) => {
+    if (confirm("¿Estás seguro de eliminar este horario de reunión?")) {
+      handleContentAction("deleteItem", { type: "schedules", id });
+      if (editingScheduleId === id) {
+        handleCancelEditSchedule();
+      }
+    }
+  };
+
+  const deleteItem = (type: "events" | "sermons" | "podcasts" | "studies" | "schedules", id: string) => {
     if (confirm("¿Estás seguro de eliminar este elemento?")) {
       handleContentAction("deleteItem", { type, id });
+      if (type === "events" && editingEventId === id) {
+        handleCancelEditEvent();
+      }
     }
   };
 
@@ -378,6 +486,10 @@ export default function AdminPage() {
                 id: "livestream", 
                 label: `🔴 Streaming en Vivo${liveStreamForm.active ? " (ACTIVO)" : ""}` 
               },
+              { 
+                id: "schedules", 
+                label: `⏰ Horarios de Cultos (${(dbData?.schedules && dbData.schedules.length > 0 ? dbData.schedules : defaultSchedules).length})` 
+              },
               { id: "verse", label: "⛪ Versículo del Día" },
               { id: "events", label: "📅 Eventos / Agenda" },
               { id: "sermons", label: "🎥 Sermones (Videos)" },
@@ -476,14 +588,14 @@ export default function AdminPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="text-[10px] font-bold text-dorado uppercase tracking-wider block mb-1.5">
-                          Enlace del Video en Vivo (YouTube Live)
+                          Enlace del Video en Vivo (IPTV M3U8, YouTube, Facebook, SelvaPlay, etc.)
                         </label>
                         <input
-                          type="url"
+                          type="text"
                           required
                           value={liveStreamForm.streamUrl}
-                          onChange={(e) => setLiveStreamForm({ ...liveStreamForm, streamUrl: e.target.value })}
-                          placeholder="Ej. https://www.youtube.com/watch?v=... o https://youtu.be/..."
+                          onChange={(e) => setLiveStreamForm({ ...liveStreamForm, streamUrl: cleanStreamUrl(e.target.value) })}
+                          placeholder="Ej. https://.../playlist.m3u8, YouTube, Facebook o <iframe>"
                           className="w-full bg-monte-dark/60 border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:border-dorado focus:outline-none transition-colors"
                         />
                       </div>
@@ -496,7 +608,7 @@ export default function AdminPage() {
                           type="text"
                           value={liveStreamForm.scheduledTime || ""}
                           onChange={(e) => setLiveStreamForm({ ...liveStreamForm, scheduledTime: e.target.value })}
-                          placeholder="Ej. Domingos 09:30 hs · Culto Familiar"
+                          placeholder="Ej. Domingos 19:30 hs · Culto General"
                           className="w-full bg-monte-dark/60 border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:border-dorado focus:outline-none transition-colors"
                         />
                       </div>
@@ -528,22 +640,200 @@ export default function AdminPage() {
                 </div>
 
                 {/* Vista Previa del Reproductor */}
-                {liveStreamForm.streamUrl && (
+                {liveStreamForm.streamUrl && liveStreamForm.active && (
                   <div className="glass-card rounded-3xl p-8 relative overflow-hidden">
                     <h3 className="font-display text-base font-bold text-white mb-4 flex items-center gap-2">
                       <span>📺</span> Vista Previa del Reproductor
                     </h3>
-                    <div className="aspect-video w-full max-w-2xl rounded-2xl overflow-hidden border border-white/10 bg-black">
-                      <iframe
-                        src={getYouTubeEmbedUrl(liveStreamForm.streamUrl)}
+                    <div className="w-full max-w-2xl">
+                      <StreamPlayer
+                        url={liveStreamForm.streamUrl}
                         title="Vista Previa de Transmisión"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        className="w-full h-full border-0"
                       />
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* TAB: HORARIOS DE CULTOS */}
+            {activeTab === "schedules" && (
+              <div className="flex flex-col gap-8">
+                {/* Formulario Crear / Editar */}
+                <div className="glass-card rounded-3xl p-8 relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-[2px] bg-dorado" />
+                  
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                    <div>
+                      <h2 className="font-display text-xl font-bold text-white flex items-center gap-2">
+                        ⏰ {editingScheduleId ? "Editar Horario de Culto / Reunión" : "Nuevo Horario de Culto / Reunión"}
+                      </h2>
+                      <p className="text-xs text-texto-muted mt-1">
+                        Configurá las reuniones semanales que se mostrarán en la página principal y en los avisos de streaming.
+                      </p>
+                    </div>
+                    {editingScheduleId && (
+                      <button
+                        type="button"
+                        onClick={handleCancelEditSchedule}
+                        className="text-xs font-bold text-texto-muted hover:text-white border border-white/10 px-3 py-1.5 rounded-lg transition-colors self-start sm:self-auto"
+                      >
+                        ✕ Cancelar Edición
+                      </button>
+                    )}
+                  </div>
+
+                  <form onSubmit={saveSchedule} className="flex flex-col gap-5">
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-[10px] font-bold text-dorado uppercase tracking-wider block mb-1.5">
+                          Día de la Semana
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={scheduleForm.dia}
+                          onChange={(e) => setScheduleForm({ ...scheduleForm, dia: e.target.value })}
+                          placeholder="Ej. Miércoles, Sábado, Domingo..."
+                          className="w-full bg-monte-dark/60 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:border-dorado focus:outline-none transition-colors"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-bold text-dorado uppercase tracking-wider block mb-1.5">
+                          Horario
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={scheduleForm.hora}
+                          onChange={(e) => setScheduleForm({ ...scheduleForm, hora: e.target.value })}
+                          placeholder="Ej. 19:00 hs, 20:00 hs, 19:30 hs..."
+                          className="w-full bg-monte-dark/60 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:border-dorado focus:outline-none transition-colors"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-bold text-dorado uppercase tracking-wider block mb-1.5">
+                        Título de la Reunión / Culto
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={scheduleForm.titulo}
+                        onChange={(e) => setScheduleForm({ ...scheduleForm, titulo: e.target.value })}
+                        placeholder="Ej. Reunión de Alabanza, Oración y Estudio de la Palabra"
+                        className="w-full bg-monte-dark/60 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:border-dorado focus:outline-none transition-colors"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-bold text-dorado uppercase tracking-wider block mb-1.5">
+                        Descripción o Ubicación Especial (Opcional)
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={scheduleForm.desc}
+                        onChange={(e) => setScheduleForm({ ...scheduleForm, desc: e.target.value })}
+                        placeholder="Ej. En Edificio Fundacional (Rincón y Reconquista) o Tiempo de comunión..."
+                        className="w-full bg-monte-dark/60 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:border-dorado focus:outline-none transition-colors resize-none"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-3 mt-2">
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="bg-dorado hover:bg-dorado/90 disabled:bg-dorado/50 text-crema font-bold text-xs uppercase tracking-wider py-3.5 px-6 rounded-xl transition-all duration-300 hover:shadow-[0_4px_20px_rgba(200,168,75,0.2)] flex items-center justify-center gap-2"
+                      >
+                        {loading ? (
+                          <span className="w-4 h-4 rounded-full border-2 border-crema border-t-transparent animate-spin" />
+                        ) : editingScheduleId ? (
+                          "Actualizar Horario"
+                        ) : (
+                          "Agregar Horario"
+                        )}
+                      </button>
+
+                      {editingScheduleId && (
+                        <button
+                          type="button"
+                          onClick={handleCancelEditSchedule}
+                          className="border border-white/10 hover:bg-white/5 text-white font-bold text-xs uppercase tracking-wider py-3.5 px-5 rounded-xl transition-all"
+                        >
+                          Cancelar
+                        </button>
+                      )}
+                    </div>
+                  </form>
+                </div>
+
+                {/* Lista de Horarios Configurados */}
+                <div className="glass-card rounded-3xl p-8 relative overflow-hidden">
+                  <div className="flex justify-between items-center mb-6">
+                    <div>
+                      <h3 className="font-display text-lg font-bold text-white">
+                        Horarios Registrados en la Web
+                      </h3>
+                      <p className="text-xs text-texto-muted mt-1">
+                        Podés editar o eliminar los horarios existentes. Se reflejarán de inmediato en el sitio.
+                      </p>
+                    </div>
+                    <span className="text-xs font-bold text-dorado bg-dorado/10 px-3 py-1 rounded-full border border-dorado/20">
+                      {(dbData?.schedules && dbData.schedules.length > 0 ? dbData.schedules : defaultSchedules).length} reuniones
+                    </span>
+                  </div>
+
+                  {(() => {
+                    const activeSchedules = (dbData?.schedules && dbData.schedules.length > 0) ? dbData.schedules : defaultSchedules;
+                    return (
+                      <div className="flex flex-col gap-3">
+                        {activeSchedules.map((item: ScheduleItem) => (
+                          <div
+                            key={item.id}
+                            className={`bg-monte/60 border rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all ${
+                              editingScheduleId === item.id ? "border-dorado shadow-lg bg-monte/90" : "border-white/5 hover:border-white/20"
+                            }`}
+                          >
+                            <div className="flex flex-col">
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-bold text-dorado uppercase tracking-wider bg-dorado/10 px-2.5 py-0.5 rounded-full border border-dorado/20">
+                                  {item.dia} · {item.hora}
+                                </span>
+                              </div>
+                              <h4 className="font-display text-base font-bold text-white mt-1.5">
+                                {item.titulo}
+                              </h4>
+                              {item.desc && (
+                                <p className="text-xs text-texto-muted mt-1 leading-relaxed">
+                                  {item.desc}
+                                </p>
+                              )}
+                            </div>
+
+                            <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                              <button
+                                type="button"
+                                onClick={() => handleEditSchedule(item)}
+                                className="text-xs font-bold text-dorado hover:text-white bg-dorado/10 hover:bg-dorado/20 border border-dorado/30 px-3 py-1.5 rounded-xl transition-all"
+                              >
+                                ✏️ Editar
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => deleteSchedule(item.id)}
+                                className="text-xs font-bold text-red-400 hover:text-red-300 bg-red-950/30 hover:bg-red-950/60 border border-red-800/40 px-3 py-1.5 rounded-xl transition-all"
+                              >
+                                🗑️ Eliminar
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
               </div>
             )}
 
@@ -597,14 +887,21 @@ export default function AdminPage() {
             {/* TAB 2: EVENTOS / ACTIVIDADES */}
             {activeTab === "events" && (
               <div className="flex flex-col gap-8">
-                {/* Form agregar */}
-                <div className="glass-card rounded-3xl p-8 relative overflow-hidden">
+                {/* Form agregar / editar */}
+                <div id="event-form-container" className="glass-card rounded-3xl p-8 relative overflow-hidden transition-all">
                   <div className="absolute top-0 left-0 w-full h-[2px] bg-dorado" />
-                  <h2 className="font-display text-xl font-bold text-white mb-6">
-                    Agregar Actividad / Evento
-                  </h2>
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="font-display text-xl font-bold text-white">
+                      {editingEventId ? "Editar Actividad / Evento" : "Agregar Actividad / Evento"}
+                    </h2>
+                    {editingEventId && (
+                      <span className="text-xs bg-dorado/15 text-dorado border border-dorado/30 px-3 py-1 rounded-full font-bold">
+                        Modo Edición
+                      </span>
+                    )}
+                  </div>
                   
-                  <form onSubmit={addEvent} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <form onSubmit={saveEvent} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
                       <label className="text-[10px] font-bold text-dorado uppercase tracking-wider block mb-1.5">
                         Título del Evento
@@ -671,44 +968,149 @@ export default function AdminPage() {
                         className="w-full bg-monte-dark/60 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-dorado focus:outline-none transition-colors resize-none"
                       />
                     </div>
+                    <div className="md:col-span-2">
+                      <label className="text-[10px] font-bold text-dorado uppercase tracking-wider block mb-1.5">
+                        Imagen Descriptiva (Opcional)
+                      </label>
+                      <div className="bg-monte-dark/60 border border-white/10 rounded-xl p-4">
+                        <FileUpload 
+                          onUploadSuccess={(url) => setEventForm({ ...eventForm, imageUrl: url })}
+                          accept="image/*"
+                          label="Subir imagen del evento"
+                        />
+                        <div className="relative flex items-center py-4">
+                          <div className="flex-grow border-t border-white/10"></div>
+                          <span className="flex-shrink-0 mx-4 text-[10px] text-white/40 uppercase tracking-widest font-bold">O pegar URL de imagen</span>
+                          <div className="flex-grow border-t border-white/10"></div>
+                        </div>
+                        <input
+                          type="text"
+                          value={eventForm.imageUrl || ""}
+                          onChange={(e) => setEventForm({ ...eventForm, imageUrl: e.target.value })}
+                          placeholder="Ej. https://ejemplo.com/foto.jpg"
+                          className="w-full bg-monte-dark/80 border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:border-dorado focus:outline-none transition-colors"
+                        />
+                        {eventForm.imageUrl && (
+                          <div className="mt-3 flex items-center gap-3 bg-monte/60 border border-white/10 p-2 rounded-xl">
+                            <div className="w-16 h-12 rounded-lg overflow-hidden shrink-0 bg-monte-dark">
+                              <img src={eventForm.imageUrl} alt="Vista previa" className="w-full h-full object-cover" />
+                            </div>
+                            <span className="text-xs text-texto-muted truncate flex-grow">{eventForm.imageUrl}</span>
+                            <button
+                              type="button"
+                              onClick={() => setEventForm({ ...eventForm, imageUrl: "" })}
+                              className="text-xs font-bold text-red-400 hover:text-red-300 px-2 py-1"
+                            >
+                              Quitar
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                     
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="bg-dorado hover:bg-dorado/90 text-crema font-bold text-xs uppercase tracking-wider py-3.5 rounded-xl transition-all duration-300 w-fit px-8 mt-2 md:col-span-2"
-                    >
-                      Agregar Evento
-                    </button>
+                    <div className="flex items-center gap-3 mt-2 md:col-span-2">
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="bg-dorado hover:bg-dorado/90 disabled:bg-dorado/50 text-crema font-bold text-xs uppercase tracking-wider py-3.5 px-8 rounded-xl transition-all duration-300 w-fit flex items-center gap-2"
+                      >
+                        {loading ? (
+                          <span className="w-4 h-4 rounded-full border-2 border-crema border-t-transparent animate-spin" />
+                        ) : editingEventId ? (
+                          "Actualizar Evento"
+                        ) : (
+                          "Agregar Evento"
+                        )}
+                      </button>
+
+                      {editingEventId && (
+                        <button
+                          type="button"
+                          onClick={handleCancelEditEvent}
+                          className="border border-white/10 hover:bg-white/5 text-white font-bold text-xs uppercase tracking-wider py-3.5 px-6 rounded-xl transition-all"
+                        >
+                          Cancelar
+                        </button>
+                      )}
+                    </div>
                   </form>
                 </div>
 
-                {/* Listado */}
+                {/* Listado ordenado cronológicamente (más actual a más antiguo) */}
                 <div className="glass-card rounded-3xl p-8 relative overflow-hidden">
-                  <h3 className="font-display text-lg font-bold text-white mb-6">
-                    Eventos Guardados
-                  </h3>
-                  
-                  {dbData?.events.length === 0 ? (
-                    <p className="text-sm text-texto-muted text-center py-6">No hay eventos en la agenda.</p>
-                  ) : (
-                    <div className="flex flex-col gap-4">
-                      {dbData?.events.map((event: EventItem) => (
-                        <div key={event.id} className="border border-white/5 rounded-2xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-monte/40">
-                          <div>
-                            <span className="text-[9px] font-bold text-dorado uppercase tracking-wide">{event.category} · {event.date}</span>
-                            <h4 className="font-display font-bold text-white text-base mt-0.5">{event.title}</h4>
-                            <p className="text-xs text-texto-muted mt-1 max-w-xl">{event.description}</p>
-                          </div>
-                          <button
-                            onClick={() => deleteItem("events", event.id)}
-                            className="bg-red-950/40 hover:bg-red-900/40 text-red-400 border border-red-900/30 px-4 py-2 rounded-xl text-xs font-bold transition-all uppercase tracking-wider shrink-0"
-                          >
-                            Eliminar
-                          </button>
-                        </div>
-                      ))}
+                  <div className="flex justify-between items-center mb-6">
+                    <div>
+                      <h3 className="font-display text-lg font-bold text-white">
+                        Eventos Guardados
+                      </h3>
+                      <p className="text-xs text-texto-muted mt-1">
+                        Ordenados cronológicamente, desde el más actual al más antiguo.
+                      </p>
                     </div>
-                  )}
+                    <span className="text-xs font-bold text-dorado bg-dorado/10 px-3 py-1 rounded-full border border-dorado/20">
+                      {dbData?.events?.length || 0} eventos
+                    </span>
+                  </div>
+                  
+                  {(() => {
+                    const sortedEvents = [...(dbData?.events || [])].sort((a, b) => {
+                      const timeA = new Date(a.date).getTime() || 0;
+                      const timeB = new Date(b.date).getTime() || 0;
+                      if (timeB !== timeA) return timeB - timeA;
+                      return (b.id || "").localeCompare(a.id || "");
+                    });
+
+                    if (sortedEvents.length === 0) {
+                      return <p className="text-sm text-texto-muted text-center py-6">No hay eventos en la agenda.</p>;
+                    }
+
+                    return (
+                      <div className="flex flex-col gap-4">
+                        {sortedEvents.map((event: EventItem) => (
+                          <div
+                            key={event.id}
+                            className={`border rounded-2xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-all ${
+                              editingEventId === event.id
+                                ? "border-dorado shadow-lg bg-monte/90"
+                                : "border-white/5 bg-monte/40 hover:border-white/20"
+                            }`}
+                          >
+                            <div className="flex items-start gap-4">
+                              {event.imageUrl && (
+                                <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-white/10 hidden sm:block bg-monte-dark">
+                                  <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover" />
+                                </div>
+                              )}
+                              <div>
+                                <span className="text-[9px] font-bold text-dorado uppercase tracking-wide">
+                                  {event.category} · {formatDisplayDate(event.date)} {event.time ? `· ${event.time}` : ""}
+                                </span>
+                                <h4 className="font-display font-bold text-white text-base mt-0.5">{event.title}</h4>
+                                <p className="text-xs text-texto-muted mt-1 max-w-xl line-clamp-2">{event.description}</p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                              <button
+                                type="button"
+                                onClick={() => handleEditEvent(event)}
+                                className="text-xs font-bold text-dorado hover:text-white bg-dorado/10 hover:bg-dorado/20 border border-dorado/30 px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5"
+                              >
+                                ✏️ Editar
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => deleteItem("events", event.id)}
+                                className="text-xs font-bold text-red-400 hover:text-red-300 bg-red-950/30 hover:bg-red-950/60 border border-red-800/40 px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5"
+                              >
+                                🗑️ Eliminar
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             )}
@@ -746,7 +1148,7 @@ export default function AdminPage() {
                         required
                         value={sermonForm.preacher}
                         onChange={(e) => setSermonForm({ ...sermonForm, preacher: e.target.value })}
-                        placeholder="Ej. Pastor Daniel Canclini"
+                        placeholder="Ej. Pastor Daniel"
                         className="w-full bg-monte-dark/60 border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:border-dorado focus:outline-none transition-colors"
                       />
                     </div>
@@ -863,7 +1265,7 @@ export default function AdminPage() {
                         required
                         value={podcastForm.speaker}
                         onChange={(e) => setPodcastForm({ ...podcastForm, speaker: e.target.value })}
-                        placeholder="Ej. Pastor Daniel Canclini"
+                        placeholder="Ej. Pastor Daniel"
                         className="w-full bg-monte-dark/60 border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:border-dorado focus:outline-none transition-colors"
                       />
                     </div>
@@ -881,19 +1283,6 @@ export default function AdminPage() {
                     </div>
                     <div>
                       <label className="text-[10px] font-bold text-dorado uppercase tracking-wider block mb-1.5">
-                        Enlace de Audio MP3 (o embed URL)
-                      </label>
-                      <input
-                        type="url"
-                        required
-                        value={podcastForm.audioUrl}
-                        onChange={(e) => setPodcastForm({ ...podcastForm, audioUrl: e.target.value })}
-                        placeholder="Ej. https://www.ejemplo.com/audio.mp3"
-                        className="w-full bg-monte-dark/60 border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:border-dorado focus:outline-none transition-colors"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-bold text-dorado uppercase tracking-wider block mb-1.5">
                         Duración
                       </label>
                       <input
@@ -904,6 +1293,30 @@ export default function AdminPage() {
                         placeholder="Ej. 15 min, 20 min"
                         className="w-full bg-monte-dark/60 border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:border-dorado focus:outline-none transition-colors"
                       />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="text-[10px] font-bold text-dorado uppercase tracking-wider block mb-1.5">
+                        Archivo de Audio MP3
+                      </label>
+                      <div className="bg-monte-dark/60 border border-white/10 rounded-xl p-4">
+                        <FileUpload 
+                          onUploadSuccess={(url) => setPodcastForm({ ...podcastForm, audioUrl: url })}
+                          accept="audio/mp3,audio/mpeg"
+                          label="Subir audio MP3"
+                        />
+                        <div className="relative flex items-center py-4">
+                          <div className="flex-grow border-t border-white/10"></div>
+                          <span className="flex-shrink-0 mx-4 text-[10px] text-white/40 uppercase tracking-widest font-bold">O pegar URL externa de audio</span>
+                          <div className="flex-grow border-t border-white/10"></div>
+                        </div>
+                        <input
+                          type="text"
+                          value={podcastForm.audioUrl}
+                          onChange={(e) => setPodcastForm({ ...podcastForm, audioUrl: e.target.value })}
+                          placeholder="Ej. https://www.ejemplo.com/audio.mp3"
+                          className="w-full bg-monte-dark/80 border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:border-dorado focus:outline-none transition-colors"
+                        />
+                      </div>
                     </div>
                     
                     <button
@@ -1011,15 +1424,27 @@ export default function AdminPage() {
                     </div>
                     <div className="md:col-span-2">
                       <label className="text-[10px] font-bold text-dorado uppercase tracking-wider block mb-1.5">
-                        Enlace a Archivo PDF (Opcional - Google Drive, Dropbox, URL directa)
+                        Archivo PDF Adjunto (Opcional)
                       </label>
-                      <input
-                        type="url"
-                        value={studyForm.pdfUrl}
-                        onChange={(e) => setStudyForm({ ...studyForm, pdfUrl: e.target.value })}
-                        placeholder="Ej. https://ejemplo.com/estudio.pdf o enlace a Google Drive"
-                        className="w-full bg-monte-dark/60 border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:border-dorado focus:outline-none transition-colors"
-                      />
+                      <div className="bg-monte-dark/60 border border-white/10 rounded-xl p-4">
+                        <FileUpload 
+                          onUploadSuccess={(url) => setStudyForm({ ...studyForm, pdfUrl: url })}
+                          accept="application/pdf"
+                          label="Subir documento PDF"
+                        />
+                        <div className="relative flex items-center py-4">
+                          <div className="flex-grow border-t border-white/10"></div>
+                          <span className="flex-shrink-0 mx-4 text-[10px] text-white/40 uppercase tracking-widest font-bold">O pegar URL externa (Google Drive, etc.)</span>
+                          <div className="flex-grow border-t border-white/10"></div>
+                        </div>
+                        <input
+                          type="text"
+                          value={studyForm.pdfUrl}
+                          onChange={(e) => setStudyForm({ ...studyForm, pdfUrl: e.target.value })}
+                          placeholder="Ej. https://ejemplo.com/estudio.pdf o enlace a Google Drive"
+                          className="w-full bg-monte-dark/80 border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:border-dorado focus:outline-none transition-colors"
+                        />
+                      </div>
                     </div>
                     
                     <button
@@ -1045,7 +1470,7 @@ export default function AdminPage() {
                       {dbData?.studies.map((study: Study) => (
                         <div key={study.id} className="border border-white/5 rounded-2xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-monte/40">
                           <div>
-                            <span className="text-[9px] font-bold text-dorado uppercase tracking-wide">{study.author} · {study.date}</span>
+                            <span className="text-[9px] font-bold text-dorado uppercase tracking-wide">{study.author} · {formatDisplayDate(study.date)}</span>
                             <h4 className="font-display font-bold text-white text-base mt-0.5">{study.title}</h4>
                             <p className="text-xs text-texto-muted mt-1 max-w-xl line-clamp-2">{study.content}</p>
                             {study.pdfUrl && (
@@ -1075,15 +1500,31 @@ export default function AdminPage() {
             {/* TAB 6: GALERÍA DE FOTOS */}
             {activeTab === "gallery" && (
               <div className="flex flex-col gap-8">
-                {/* Agregar por URL en Firestore */}
+                {/* Agregar foto */}
                 <div className="glass-card rounded-3xl p-8 relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-full h-[2px] bg-dorado" />
                   <h2 className="font-display text-xl font-bold text-white mb-2">
-                    Agregar Foto a la Galería (100% Gratis en Firestore)
+                    Agregar Foto a la Galería
                   </h2>
                   <p className="text-xs text-texto-muted mb-6">
-                    Pegá aquí el enlace / URL de cualquier foto (Facebook, Instagram, Google Drive, Unsplash, Imgur, etc.)
+                    Podés subir una foto desde tu dispositivo o pegar el enlace de una imagen externa.
                   </p>
+                  
+                  <div className="mb-6">
+                    <FileUpload 
+                      onUploadSuccess={(url) => {
+                        handleContentAction("addPhoto", { photoUrl: url });
+                      }}
+                      accept="image/*"
+                      label="Subir imagen desde tu PC o celular"
+                    />
+                  </div>
+
+                  <div className="relative flex items-center py-2 mb-6">
+                    <div className="flex-grow border-t border-white/10"></div>
+                    <span className="flex-shrink-0 mx-4 text-[10px] text-white/40 uppercase tracking-widest font-bold">O pegar un enlace externo</span>
+                    <div className="flex-grow border-t border-white/10"></div>
+                  </div>
                   
                   <form onSubmit={handleAddPhotoUrl} className="flex flex-col sm:flex-row gap-3">
                     <input

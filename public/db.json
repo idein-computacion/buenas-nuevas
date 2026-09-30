@@ -1,0 +1,279 @@
+{
+    "verse": {
+        "text": "Tomen el casco de la salvaci\u00f3n y la espada del Esp\u00edritu, que es la palabra de Dios\n",
+        "reference": "Efesios 6:17"
+    },
+    "schedules": [
+        {
+            "id": "sch-1",
+            "dia": "Martes",
+            "hora": "18:00 a 20:00 hs",
+            "titulo": "\"NewCom\" para adultos mayores",
+            "desc": "Lugar: C.A.M. (Lavalle 1660)"
+        },
+        {
+            "id": "sch-2",
+            "dia": "Mi\u00e9rcoles",
+            "hora": "07:00 hs",
+            "titulo": "Reuni\u00f3n de Oraci\u00f3n e Intercesi\u00f3n",
+            "desc": "Lugar: Edificio Fundacional (Rinc\u00f3n y Reconquista)"
+        },
+        {
+            "id": "sch-3",
+            "dia": "Mi\u00e9rcoles",
+            "hora": "20:00 hs",
+            "titulo": "Reuni\u00f3n de Alabanza, Oraci\u00f3n y Estudio de la Palabra",
+            "desc": "Lugar habitual: El Mens\u00fa 1177"
+        },
+        {
+            "id": "sch-4",
+            "dia": "Viernes",
+            "hora": "20:00 hs",
+            "titulo": "Voley para J\u00f3venes",
+            "desc": "Lugar: C.A.M. (Lavalle 1660)"
+        },
+        {
+            "id": "sch-5",
+            "dia": "S\u00e1bados",
+            "hora": "09:30 hs",
+            "titulo": "\"Peque\u00f1os Exploradores\" para ni\u00f1os de 4 a 12 a\u00f1os",
+            "desc": "Lugar: C.A.M. (Lavalle 1660)"
+        },
+        {
+            "id": "sch-6",
+            "dia": "Domingos",
+            "hora": "19:30 hs",
+            "titulo": "Celebramos al Se\u00f1or en Familia",
+            "desc": "Lugar habitual: El Mens\u00fa 1177"
+        },
+        {
+            "dia": "S\u00e1bados",
+            "hora": "20 hs.",
+            "titulo": "Reuni\u00f3n de J\u00f3venes",
+            "desc": "Lugar: El Mens\u00fa 1177",
+            "id": "sch-1788958957071"
+        },
+        {
+            "dia": "S\u00e1bados por medio",
+            "hora": "18:00 hs.",
+            "titulo": "\"Generaci\u00f3n de Fuego\"  para todos los Adolescentes de 12 a 17 a\u00f1os.",
+            "desc": "Lugar: en el Edificio Fundacional (Rinc\u00f3n y Reconquista)",
+            "id": "sch-1788959559028"
+        }
+    ],
+    "events": [
+        {
+            "title": "Proyecci\u00f3n del Episodio 1 de la Temporada 6 \"The Chosen\"",
+            "date": "2026-10-03",
+            "time": "20 hs.",
+            "description": "\u00a1M\u00cdRALO PRIMERO!\nEl miedo y la confusi\u00f3n se apoderan de los disc\u00edpulos , mientras intentan comprender el arresto de Jes\u00fas y\nla traici\u00f3n de Judas. Mientras luchan por permanecer unidos, Nicodemo se enfrenta solo al Sumo Sacerdote en una fuerte confrontaci\u00f3n que sume al consejo en el caos.\n\n\u00danete a nosotros en esta experiencia especial de acceso anticipado para ver \"el Episodio 1 de la Temporada 6 de The Chosen\".\n",
+            "category": "Comunidad",
+            "imageUrl": "\/uploads\/1790436483_5e9a4f3a.png",
+            "id": "1790436491059"
+        },
+        {
+            "title": "Instituto de Capacitaci\u00f3n L.E.F.",
+            "date": "2026-10-04",
+            "time": "10 hs.",
+            "description": "Tendremos el \u00faltimo encuentro 2026 de Nuestro Instituto de Capacitaci\u00f3n en Liderazgo. En el Edificio Fundacional",
+            "category": "Estudio",
+            "imageUrl": "",
+            "id": "1790459872945"
+        },
+        {
+            "title": "Cena del Se\u00f1or",
+            "date": "2026-10-04",
+            "time": "19:30 hs.",
+            "description": "Celebramos juntos la Cena del Se\u00f1or en nuestro Culto Principal de las 19:30 hs.",
+            "category": "Comunidad",
+            "imageUrl": "",
+            "id": "1790459922978"
+        },
+        {
+            "title": "Encuentro Especial de Intercesi\u00f3n",
+            "date": "2026-10-08",
+            "time": "18 hs.",
+            "description": "En nuestro Edificio Fundacional",
+            "category": "Comunidad",
+            "imageUrl": "",
+            "id": "1790713260291"
+        },
+        {
+            "title": "Feria Americana en el C.A.M.",
+            "date": "2026-10-10",
+            "time": "9 hs.",
+            "description": "Ministerio \"Manos abiertas\" realiza la Feria Americana con el doble prop\u00f3sito de bendecir a las personas con el acceso a comprar prendas a muy bajo costo y con lo recaudado se reutiliza para bendecir a gente necesitada a trav\u00e9s del \u00e1rea de \"Acci\u00f3n Social\".",
+            "category": "Social",
+            "imageUrl": "",
+            "id": "1790713522942"
+        },
+        {
+            "title": "Charla de Prevensi\u00f3n y Concientizaci\u00f3n sobre el C\u00e1ncer de mama (Lalcec)",
+            "date": "2026-10-15",
+            "time": "19 hs.",
+            "description": "En nuestro Auditorio Principal de calle El Mens\u00fa 1177",
+            "category": "Social",
+            "imageUrl": "",
+            "id": "1790713671626"
+        },
+        {
+            "title": "Actividad Juvenil en el Camping de la Iglesia",
+            "date": "2026-10-17",
+            "time": "15:30 hs.",
+            "description": "Encuentro especial del Ministerio Juvenil en el Camping de la Iglesia.",
+            "category": "Comunidad",
+            "imageUrl": "",
+            "id": "1790714546510"
+        },
+        {
+            "title": "Primeros Pasos - Curso de Discipulado 1",
+            "date": "2026-10-18",
+            "time": "10 hs.",
+            "description": "En las instalaciones del Edificio Fundacional. Rinc\u00f3n y Reconquista.",
+            "category": "Estudio",
+            "imageUrl": "",
+            "id": "1790714669284"
+        },
+        {
+            "title": "Festejamos el D\u00eda de la Madre",
+            "date": "2026-10-18",
+            "time": "19:30 hs.",
+            "description": "En el Auditorio Principal. El Mens\u00fa 1177",
+            "category": "Comunidad",
+            "imageUrl": "",
+            "id": "1790714710132"
+        },
+        {
+            "title": "En Voz Alta (Streaming)",
+            "date": "2026-10-20",
+            "time": "21 hs.",
+            "description": "Tendremos nuestro Segundo Programa en Vivo que pod\u00e9s seguir desde nuestra p\u00e1gina web iglesiabuenasnuevas.com.ar . Ser\u00e1 un programa especial sobre \"porque no celebramos el Halloween\" y en su lugar celebramos la Fiesta de la Luz.",
+            "category": "Social",
+            "imageUrl": "",
+            "id": "1790714892104"
+        },
+        {
+            "title": "Entrenamiento en Evangelismo Urbano - Comisionados",
+            "date": "2026-10-22",
+            "time": "20 hs.",
+            "description": "El lugar ser\u00e1 a Confirmar. Tendremos un tiempo especial de unidad con las Iglesias de la Ciudad y el Ministerio de Comisionados.",
+            "category": "Comunidad",
+            "imageUrl": "",
+            "id": "1790714968487"
+        },
+        {
+            "title": "Entrenamiento en Evangelismo Urbano - Comisionados",
+            "date": "2026-10-23",
+            "time": "9 hs.",
+            "description": "Encuentro de Pastores y L\u00edderes con el Equipo de Comisionados (lugar a Confirmar)",
+            "category": "Comunidad",
+            "imageUrl": "",
+            "id": "1790715027877"
+        },
+        {
+            "title": "Entrenamiento en Evangelismo Urbano - Comisionados",
+            "date": "2026-10-23",
+            "time": "20 hs.",
+            "description": "Talleres de Capacitaci\u00f3n del Ministerio Comisionados. (lugar a Confirmar)",
+            "category": "Comunidad",
+            "imageUrl": "",
+            "id": "1790715082158"
+        },
+        {
+            "title": "Entrenamiento en Evangelismo Urbano - Comisionados",
+            "date": "2026-10-24",
+            "time": "16 hs.",
+            "description": "Evangelismo Urbano",
+            "category": "Comunidad",
+            "imageUrl": "",
+            "id": "1790715531747"
+        },
+        {
+            "title": "\"Noche de Milagros\"",
+            "date": "2026-10-24",
+            "time": "20 hs.",
+            "description": "Noche de Evangelismo y Milagros en la Plaza San Mart\u00edn con todas las Iglesias de Ober\u00e1.",
+            "category": "Comunidad",
+            "imageUrl": "",
+            "id": "1790715578603"
+        },
+        {
+            "title": "Primeros Pasos - Curso de Discipulado 2",
+            "date": "2026-10-25",
+            "time": "10 hs.",
+            "description": "En las instalaciones del Edificio Fundacional. Rinc\u00f3n y Reconquista.",
+            "category": "Comunidad",
+            "imageUrl": "",
+            "id": "1790715629567"
+        },
+        {
+            "title": "Actividad Especial en el Hogar de D\u00eda",
+            "date": "2026-09-29",
+            "time": "9 hs.",
+            "description": "Tendemos una actividad especial para los adolescentes del Hogar de D\u00eda. Estemos orando por quienes estar\u00e1n llevando el mensaje de las Buenas Nuevas todos los adolescentes del Hogar.\n",
+            "category": "Social",
+            "imageUrl": "",
+            "id": "1790715688696"
+        },
+        {
+            "title": "Fiesta de la Luz \"Octubrillante en la Ciudad de Ober\u00e1\"",
+            "date": "2026-10-31",
+            "time": "19 hs.",
+            "description": "Gran Fiesta de Celebraci\u00f3n al Se\u00f1or en el Centro de la Ciudad, en unidad con todas las Iglesias de Ober\u00e1.",
+            "category": "Comunidad",
+            "imageUrl": "",
+            "id": "1790715729030"
+        }
+    ],
+    "sermons": [
+        {
+            "title": "Primer Programa en Vivo \"En Voz Alta\" Abordamos la Prevensi\u00f3n del Sui.....",
+            "preacher": "Pastor Pablo Garay",
+            "date": "2026-09-26",
+            "videoUrl": "https:\/\/www.youtube.com\/watch?v=gqzpSQIFp8w&rco=1",
+            "duration": "1 hora 12 min",
+            "id": "1790435337284"
+        }
+    ],
+    "podcasts": [
+        {
+            "title": "El Costo del discipulado",
+            "speaker": "Pastor Abel Ar\u00e9valo",
+            "date": "2026-09-16",
+            "audioUrl": "\/uploads\/1789563580_a4c74d1d.mp3",
+            "duration": "7 min  18 seg",
+            "id": "1789563592408"
+        }
+    ],
+    "studies": [],
+    "gallery": [
+        "\/uploads\/1789685777_4d92a938.jpg",
+        "\/uploads\/1789685807_a2e722be.jpg",
+        "\/uploads\/1789685826_c4c983c4.jpg",
+        "\/uploads\/1789685840_7fb20f2e.jpg",
+        "\/uploads\/1789685858_6d6615d4.jpg",
+        "\/uploads\/1789685873_936d8285.jpg",
+        "\/uploads\/1789685888_8e775f4e.jpg",
+        "\/uploads\/1789685909_84dbda75.jpg",
+        "\/uploads\/1789685925_83923378.jpg",
+        "\/uploads\/1789685945_dd833461.jpg",
+        "\/uploads\/1789685993_282b9245.jpg",
+        "\/uploads\/1789686011_ddb207a4.jpg",
+        "\/uploads\/1789686024_beca8f45.jpg",
+        "\/uploads\/1789686038_37f92937.jpg",
+        "\/uploads\/1789686058_b9119384.jpg",
+        "\/uploads\/1789686072_8963ea62.jpg",
+        "\/uploads\/1789686086_7c12811a.jpg",
+        "\/uploads\/1789686130_a4a7e75f.jpg",
+        "\/uploads\/1789686144_f922ae60.jpg",
+        "\/uploads\/1789686157_9665f587.jpg"
+    ],
+    "messages": [],
+    "liveStream": {
+        "active": true,
+        "title": "Culto de Adoraci\u00f3n y Palabra en Vivo",
+        "streamUrl": "https:\/\/iptv.ixfo.com.ar:30443\/live\/BuenasNuevasTv\/playlist.m3u8",
+        "description": "Te damos la bienvenida a nuestra reuni\u00f3n dominical. \u00a1Alabemos y escuchemos la Palabra de Dios juntos desde cualquier lugar!",
+        "scheduledTime": "Domingos 19:30 hs"
+    }
+}

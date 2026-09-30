@@ -1,7 +1,7 @@
-import { readDb } from "@/lib/db";
 import HomeClient from "@/components/HomeClient";
+import { getCachedDbData } from "@/lib/apiClient";
 
-export default async function Home() {
-  const db = await readDb();
+export default function Home() {
+  const db = getCachedDbData();
   return <HomeClient initialData={db} />;
 }

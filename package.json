@@ -4,15 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:turbo": "next dev",
+    "dev:webpack": "next dev --webpack",
+    "clean": "node -e \"require('fs').rmSync('.next', { recursive: true, force: true }); require('fs').rmSync('out', { recursive: true, force: true })\"",
     "build": "next build",
+    "zip:ferozo": "powershell -ExecutionPolicy Bypass -File scripts/crear-zip-ferozo.ps1",
     "start": "next start",
-    "lint": "eslint",
-    "migrate": "npx tsx scripts/migrate-to-firebase.ts",
-    "deploy": "npx firebase-tools deploy --only hosting"
+    "lint": "eslint"
   },
   "dependencies": {
-    "firebase": "^11.1.0",
-    "firebase-admin": "^13.0.1",
     "next": "16.2.10",
     "react": "19.2.4",
     "react-dom": "19.2.4"
