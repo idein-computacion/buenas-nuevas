@@ -52,11 +52,11 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 glass-nav">
+    <header className="sticky top-0 z-50 bg-gradient-to-r from-[#035CB4] via-[#046BD2] to-[#0284C7] text-white shadow-md border-b border-[#0284C7]/40">
       <nav className="mx-auto max-w-6xl px-6 py-3.5 flex items-center justify-between">
         {/* LOGO */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-12 h-12 md:w-14 md:h-14 rounded-full overflow-hidden border-2 border-slate-200 group-hover:border-tierra transition-colors shadow-sm bg-white">
+          <div className="w-12 h-12 md:w-14 md:h-14 rounded-full overflow-hidden border-2 border-white/80 group-hover:border-white transition-colors shadow-md bg-white">
             <img 
               src="/logo.jpg" 
               alt="Logo Buenas Nuevas" 
@@ -64,10 +64,10 @@ export default function Navbar() {
             />
           </div>
           <div className="flex flex-col">
-            <span className="font-display text-base md:text-lg font-bold text-slate-900 leading-none tracking-tight">
+            <span className="font-display text-base md:text-lg font-bold text-white leading-none tracking-tight">
               Buenas Nuevas
             </span>
-            <span className="text-[10px] text-tierra font-bold tracking-[0.12em] uppercase mt-1 leading-none">
+            <span className="text-[10px] text-sky-200 font-bold tracking-[0.14em] uppercase mt-1 leading-none">
               Para Todos
             </span>
           </div>
@@ -79,7 +79,7 @@ export default function Navbar() {
             <Link
               key={l.href}
               href={l.href}
-              className="text-xs font-bold text-slate-700 hover:text-tierra tracking-wider uppercase transition-colors"
+              className="text-xs font-bold text-white/90 hover:text-white tracking-wider uppercase transition-colors hover:bg-white/10 px-2.5 py-1.5 rounded-full"
             >
               {l.label}
             </Link>
@@ -91,8 +91,8 @@ export default function Navbar() {
             onClick={handleLiveClick}
             className={`text-xs font-bold px-4 py-2 rounded-full transition-all flex items-center gap-2 uppercase tracking-wider ${
               isLive
-                ? "bg-red-600 hover:bg-red-700 text-white shadow-[0_0_20px_rgba(239,68,68,0.4)] animate-pulse"
-                : "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/80"
+                ? "bg-red-600 hover:bg-red-700 text-white shadow-[0_0_20px_rgba(239,68,68,0.6)] animate-pulse"
+                : "bg-white/15 hover:bg-white/25 text-white border border-white/30 backdrop-blur-sm"
             }`}
           >
             {isLive ? (
@@ -101,16 +101,16 @@ export default function Navbar() {
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
               </span>
             ) : (
-              <span className="inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+              <span className="inline-flex rounded-full h-2 w-2 bg-red-400"></span>
             )}
             Ver En Vivo
           </Link>
           
-          <div className="h-4 w-px bg-slate-200"></div>
+          <div className="h-4 w-px bg-white/25"></div>
           
           <Link
             href="/admin"
-            className="text-xs font-bold border-2 border-tierra text-tierra hover:bg-tierra hover:text-white px-4 py-1.5 rounded-full transition-all tracking-wider uppercase flex items-center gap-1.5 shadow-sm"
+            className="text-xs font-bold border-2 border-white text-white hover:bg-white hover:text-[#046BD2] px-4 py-1.5 rounded-full transition-all tracking-wider uppercase flex items-center gap-1.5 shadow-sm"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
@@ -128,7 +128,7 @@ export default function Navbar() {
             className={`text-[10px] font-bold px-3 py-1.5 rounded-full transition-all flex items-center gap-1.5 uppercase tracking-wider ${
               isLive
                 ? "bg-red-600 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)] animate-pulse"
-                : "bg-slate-100 text-slate-700 border border-slate-200"
+                : "bg-white/15 text-white border border-white/30"
             }`}
           >
             {isLive ? (
@@ -137,7 +137,7 @@ export default function Navbar() {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
               </span>
             ) : (
-              <span className="inline-flex rounded-full h-1.5 w-1.5 bg-red-500"></span>
+              <span className="inline-flex rounded-full h-1.5 w-1.5 bg-red-400"></span>
             )}
             En Vivo
           </Link>
@@ -145,20 +145,20 @@ export default function Navbar() {
           {/* MOBILE TOGGLE */}
           <button
             onClick={() => setOpen(!open)}
-            className="flex flex-col gap-1.5 p-2 rounded-lg hover:bg-slate-100 transition-colors"
+            className="flex flex-col gap-1.5 p-2 rounded-lg hover:bg-white/15 transition-colors"
             aria-label="Abrir menú"
             aria-expanded={open}
           >
-            <span className="w-6 h-0.5 bg-slate-800" />
-            <span className="w-6 h-0.5 bg-slate-800" />
-            <span className="w-6 h-0.5 bg-slate-800" />
+            <span className="w-6 h-0.5 bg-white" />
+            <span className="w-6 h-0.5 bg-white" />
+            <span className="w-6 h-0.5 bg-white" />
           </button>
         </div>
       </nav>
 
       {/* MOBILE MENU */}
       {open && (
-        <div className="md:hidden px-6 pb-6 flex flex-col gap-3.5 border-t border-slate-100 pt-4 bg-white/98 shadow-xl backdrop-blur-xl">
+        <div className="md:hidden px-6 pb-6 flex flex-col gap-3.5 border-t border-white/15 pt-4 bg-[#035CB4] text-white shadow-2xl backdrop-blur-xl">
           {/* BOTON EN VIVO DESTACADO EN MOVIL */}
           <Link
             href="/#mensajes"
@@ -166,7 +166,7 @@ export default function Navbar() {
             className={`text-xs font-bold px-4 py-3 rounded-full transition-all flex items-center justify-center gap-2 uppercase tracking-wider text-center ${
               isLive
                 ? "bg-red-600 text-white shadow-md animate-pulse"
-                : "bg-slate-100 text-slate-700 border border-slate-200"
+                : "bg-white/15 text-white border border-white/30"
             }`}
           >
             {isLive ? (
@@ -175,7 +175,7 @@ export default function Navbar() {
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
               </span>
             ) : (
-              <span className="inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+              <span className="inline-flex rounded-full h-2 w-2 bg-red-400"></span>
             )}
             Ver En Vivo
           </Link>
@@ -185,7 +185,7 @@ export default function Navbar() {
               key={l.href}
               href={l.href}
               onClick={() => setOpen(false)}
-              className="text-sm font-bold text-slate-800 hover:text-tierra tracking-wide uppercase py-1 border-b border-slate-50"
+              className="text-sm font-bold text-white/90 hover:text-white tracking-wide uppercase py-1.5 border-b border-white/10"
             >
               {l.label}
             </Link>
@@ -194,7 +194,7 @@ export default function Navbar() {
           <Link
             href="/admin"
             onClick={() => setOpen(false)}
-            className="text-sm font-bold text-tierra tracking-wide uppercase flex items-center gap-2 mt-1 pt-3 border-t border-slate-100"
+            className="text-sm font-bold text-sky-200 hover:text-white tracking-wide uppercase flex items-center gap-2 mt-1 pt-3 border-t border-white/15"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
