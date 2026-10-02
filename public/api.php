@@ -179,7 +179,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        $allowed_exts = ['jpg', 'jpeg', 'png', 'webp', 'pdf', 'mp3'];
+        $allowed_exts = ['jpg', 'jpeg', 'png', 'webp', 'pdf', 'mp3', 'mp4', 'webm', 'ogg', 'mov'];
         
         if (!in_array($ext, $allowed_exts)) {
             http_response_code(400);
@@ -187,11 +187,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
-        // Límite de 50MB
-        $max_size = 50 * 1024 * 1024;
+        // Límite de 64MB
+        $max_size = 64 * 1024 * 1024;
         if ($file['size'] > $max_size) {
             http_response_code(400);
-            echo json_encode(["error" => "El archivo supera el límite de 50MB."]);
+            echo json_encode(["error" => "El archivo supera el límite de 64MB."]);
             exit;
         }
 
@@ -216,6 +216,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $type = 'image';
             } elseif ($ext === 'mp3') {
                 $type = 'audio';
+            } elseif (in_array($ext, ['mp4', 'webm', 'ogg', 'mov'])) {
+                $type = 'video';
             }
 
             echo json_encode([

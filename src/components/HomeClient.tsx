@@ -7,6 +7,7 @@ import { triggerPdfDownload } from "@/lib/pdfHelper";
 import { 
   getYouTubeEmbedUrl, 
   getYouTubeThumbnail, 
+  getHeroVideoInfo,
   YOUTUBE_CHANNEL_URL, 
   YOUTUBE_PLAYLIST_EMBED_URL, 
   YOUTUBE_SUBSCRIBE_URL 
@@ -22,11 +23,300 @@ export default function HomeClient({ initialData }: HomeClientProps) {
   const [activeTab, setActiveTab] = useState<"podcasts" | "studies">("podcasts");
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
   const [selectedStudy, setSelectedStudy] = useState<Study | null>(null);
-  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null);
+  const [gallerySlide, setGallerySlide] = useState<number>(0);
+  const [isGalleryPaused, setIsGalleryPaused] = useState<boolean>(false);
   const [isLiveModalOpen, setIsLiveModalOpen] = useState<boolean>(false);
 
   const currentSchedules: ScheduleItem[] = data.schedules && data.schedules.length > 0 ? data.schedules : defaultSchedules;
   const domingoSchedule = currentSchedules.find(s => s.dia?.toLowerCase().includes("domingo"));
+  const heroVideoInfo = getHeroVideoInfo(data.heroVideo);
+
+  const communityPhotos = [
+    "/galeria/comunidad-1.jpg",
+    "/galeria/comunidad-2.jpg",
+    "/galeria/comunidad-3.jpg",
+    "/galeria/comunidad-4.jpg",
+    "/galeria/comunidad-5.jpg",
+    "/galeria/comunidad-6.jpg",
+    "/galeria/pastor-pablo.jpg"
+  ];
+  const galleryList: string[] = (data.gallery && data.gallery.length > 0 && !data.gallery[0]?.includes('/uploads/'))
+    ? data.gallery
+    : communityPhotos;
+
+  // Autoplay for photo gallery carousel
+  useEffect(() => {
+    if (!galleryList || galleryList.length <= 1 || isGalleryPaused) return;
+    const interval = setInterval(() => {
+      setGallerySlide((prev) => (prev + 1) % galleryList.length);
+    }, 4500);
+    return () => clearInterval(interval);
+  }, [galleryList, isGalleryPaused]);
+
+  const handleNextPhoto = () => {
+    if (!galleryList || galleryList.length === 0) return;
+    setGallerySlide((prev) => (prev + 1) % galleryList.length);
+  };
+
+  const handlePrevPhoto = () => {
+    if (!galleryList || galleryList.length === 0) return;
+    setGallerySlide((prev) => (prev - 1 + galleryList.length) % galleryList.length);
+  };
+
+  const getScheduleIcon = (titulo: string, desc: string, iconClass = "w-6 h-6 text-white") => {
+    const t = (titulo + " " + desc).toLowerCase();
+    if (t.includes("oración") || t.includes("intercesión") || t.includes("intercesion") || t.includes("oracion")) {
+      return (
+        <svg viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+        </svg>
+      );
+    }
+    if (t.includes("joven") || t.includes("jóvenes") || t.includes("adolescente") || t.includes("fuego")) {
+      return (
+        <svg viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
+        </svg>
+      );
+    }
+    if (t.includes("niño") || t.includes("niños") || t.includes("explorador")) {
+      return (
+        <svg viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      );
+    }
+    if (t.includes("voley") || t.includes("newcom") || t.includes("deporte")) {
+      return (
+        <svg viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+          <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+          <path d="M4 22h16"/>
+          <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+          <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+          <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+        </svg>
+      );
+    }
+    if (t.includes("palabra") || t.includes("estudio") || t.includes("alabanza")) {
+      return (
+        <svg viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+        </svg>
+      );
+    }
+    if (t.includes("celebra") || t.includes("familia") || t.includes("culto") || t.includes("domingo")) {
+      return (
+        <svg viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 2v20M7 8h10"/>
+        </svg>
+      );
+    }
+    return (
+      <svg viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+        <line x1="16" x2="16" y1="2" y2="6"/>
+        <line x1="8" x2="8" y1="2" y2="6"/>
+        <line x1="3" x2="21" y1="10" y2="10"/>
+        <path d="M12 14v4l2 1"/>
+      </svg>
+    );
+  };
+
+  const getScheduleTheme = (titulo: string, desc: string) => {
+    const t = (titulo + " " + desc).toLowerCase();
+    
+    // 1. Oración e Intercesión (Púrpura / Índigo espiritual)
+    if (t.includes("oración") || t.includes("intercesión") || t.includes("intercesion") || t.includes("oracion")) {
+      return {
+        badgeClass: "bg-purple-100 text-purple-900 border-purple-200/90",
+        iconBoxClass: "bg-gradient-to-br from-purple-600 via-indigo-600 to-purple-800 text-white shadow-md shadow-purple-500/25 border border-purple-400/30",
+        containerClass: "bg-gradient-to-br from-purple-50/80 via-white to-indigo-50/30 border-purple-200 hover:border-purple-400 hover:shadow-lg hover:shadow-purple-500/10",
+        titleColor: "text-purple-950",
+      };
+    }
+    
+    // 2. Jóvenes y Adolescentes (Naranja de Fuego & Rojo coral)
+    if (t.includes("joven") || t.includes("jóvenes") || t.includes("adolescente") || t.includes("fuego")) {
+      return {
+        badgeClass: "bg-amber-100 text-amber-950 border-amber-300",
+        iconBoxClass: "bg-gradient-to-br from-amber-500 via-orange-600 to-red-600 text-white shadow-md shadow-orange-500/25 border border-orange-400/30",
+        containerClass: "bg-gradient-to-br from-orange-50/80 via-white to-amber-50/30 border-orange-200 hover:border-orange-400 hover:shadow-lg hover:shadow-orange-500/10",
+        titleColor: "text-orange-950",
+      };
+    }
+    
+    // 3. Niños Exploradores (Verde Esmeralda & Menta)
+    if (t.includes("niño") || t.includes("niños") || t.includes("explorador")) {
+      return {
+        badgeClass: "bg-emerald-100 text-emerald-950 border-emerald-300",
+        iconBoxClass: "bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-700 text-white shadow-md shadow-emerald-500/25 border border-emerald-400/30",
+        containerClass: "bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/30 border-emerald-200 hover:border-emerald-400 hover:shadow-lg hover:shadow-emerald-500/10",
+        titleColor: "text-emerald-950",
+      };
+    }
+    
+    // 4. Deportes, Voley, NewCom (Cian & Azul Eléctrico)
+    if (t.includes("voley") || t.includes("newcom") || t.includes("deporte")) {
+      return {
+        badgeClass: "bg-cyan-100 text-cyan-950 border-cyan-300",
+        iconBoxClass: "bg-gradient-to-br from-cyan-500 via-sky-600 to-blue-600 text-white shadow-md shadow-cyan-500/25 border border-cyan-400/30",
+        containerClass: "bg-gradient-to-br from-cyan-50/80 via-white to-sky-50/30 border-cyan-200 hover:border-cyan-400 hover:shadow-lg hover:shadow-cyan-500/10",
+        titleColor: "text-cyan-950",
+      };
+    }
+    
+    // 5. Alabanza y Estudio de la Palabra (Rosa Rubí / Carmesí)
+    if (t.includes("palabra") || t.includes("estudio") || t.includes("alabanza")) {
+      return {
+        badgeClass: "bg-rose-100 text-rose-950 border-rose-300",
+        iconBoxClass: "bg-gradient-to-br from-rose-500 via-pink-600 to-red-600 text-white shadow-md shadow-rose-500/25 border border-rose-400/30",
+        containerClass: "bg-gradient-to-br from-rose-50/80 via-white to-pink-50/30 border-rose-200 hover:border-rose-400 hover:shadow-lg hover:shadow-rose-500/10",
+        titleColor: "text-rose-950",
+      };
+    }
+    
+    // 6. Culto Dominical / Familia (Azul Real & Oro radiante)
+    if (t.includes("celebra") || t.includes("familia") || t.includes("culto") || t.includes("domingo")) {
+      return {
+        badgeClass: "bg-blue-100 text-blue-950 border-blue-300",
+        iconBoxClass: "bg-gradient-to-br from-[#046BD2] via-blue-600 to-indigo-700 text-white shadow-md shadow-blue-500/25 border border-blue-400/30",
+        containerClass: "bg-gradient-to-br from-blue-50/90 via-white to-amber-50/40 border-blue-300 hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/15 ring-2 ring-blue-100",
+        titleColor: "text-blue-950",
+      };
+    }
+    
+    // Default
+    return {
+      badgeClass: "bg-sky-100 text-sky-950 border-sky-300",
+      iconBoxClass: "bg-gradient-to-br from-[#046BD2] to-sky-600 text-white shadow-md shadow-blue-500/25",
+      containerClass: "bg-gradient-to-br from-slate-50 via-white to-sky-50/20 border-slate-200 hover:border-sky-300 hover:shadow-md",
+      titleColor: "text-slate-900",
+    };
+  };
+
+  const getEventCategoryIcon = (category: string, title: string, iconClass = "w-8 h-8 text-white") => {
+    const c = (category + " " + title).toLowerCase();
+    if (c.includes("estudio") || c.includes("capacitación") || c.includes("capacitacion") || c.includes("liderazgo") || c.includes("instituto")) {
+      return (
+        <svg viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+          <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+        </svg>
+      );
+    }
+    if (c.includes("social") || c.includes("feria") || c.includes("solidar") || c.includes("manos abiertas")) {
+      return (
+        <svg viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+      );
+    }
+    if (c.includes("cena") || c.includes("comunión") || c.includes("comunion") || c.includes("señor")) {
+      return (
+        <svg viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 2v20M7 8h10"/>
+        </svg>
+      );
+    }
+    if (c.includes("oración") || c.includes("intercesión") || c.includes("intercesion")) {
+      return (
+        <svg viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+        </svg>
+      );
+    }
+    return (
+      <svg viewBox="0 0 24 24" className={iconClass} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+        <line x1="16" x2="16" y1="2" y2="6"/>
+        <line x1="8" x2="8" y1="2" y2="6"/>
+        <line x1="3" x2="21" y1="10" y2="10"/>
+        <path d="M12 14v4l2 1"/>
+      </svg>
+    );
+  };
+
+  const getEventTheme = (category: string, title: string) => {
+    const c = (category + " " + title).toLowerCase();
+    
+    // 1. Social, Solidario, Feria Americana (Verde Esmeralda radiante)
+    if (c.includes("social") || c.includes("feria") || c.includes("solidar") || c.includes("manos abiertas")) {
+      return {
+        badgeClass: "bg-emerald-100 text-emerald-950 border-emerald-300 font-extrabold",
+        iconBoxClass: "bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-700 text-white shadow-lg shadow-emerald-500/30",
+        buttonClass: "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-emerald-600/25",
+        cardBorder: "hover:border-emerald-400 hover:shadow-[0_16px_40px_rgba(16,185,129,0.18)]",
+        accentColor: "text-emerald-700",
+      };
+    }
+    
+    // 2. Oración, Intercesión (Púrpura / Amatista profundo)
+    if (c.includes("oración") || c.includes("intercesión") || c.includes("intercesion")) {
+      return {
+        badgeClass: "bg-purple-100 text-purple-950 border-purple-300 font-extrabold",
+        iconBoxClass: "bg-gradient-to-br from-purple-600 via-indigo-600 to-purple-800 text-white shadow-lg shadow-purple-500/30",
+        buttonClass: "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-purple-600/25",
+        cardBorder: "hover:border-purple-400 hover:shadow-[0_16px_40px_rgba(147,51,234,0.18)]",
+        accentColor: "text-purple-700",
+      };
+    }
+    
+    // 3. Estudio, Capacitación, Liderazgo (Azul Zafiro / Índigo)
+    if (c.includes("estudio") || c.includes("capacitación") || c.includes("capacitacion") || c.includes("liderazgo") || c.includes("instituto")) {
+      return {
+        badgeClass: "bg-blue-100 text-blue-950 border-blue-300 font-extrabold",
+        iconBoxClass: "bg-gradient-to-br from-[#046BD2] via-blue-600 to-indigo-700 text-white shadow-lg shadow-blue-500/30",
+        buttonClass: "bg-gradient-to-r from-[#046BD2] to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-blue-600/25",
+        cardBorder: "hover:border-blue-400 hover:shadow-[0_16px_40px_rgba(37,99,235,0.18)]",
+        accentColor: "text-blue-700",
+      };
+    }
+    
+    // 4. Cena del Señor / Comunión (Rubí / Borgoña)
+    if (c.includes("cena") || c.includes("comunión") || c.includes("comunion") || c.includes("señor")) {
+      return {
+        badgeClass: "bg-rose-100 text-rose-950 border-rose-300 font-extrabold",
+        iconBoxClass: "bg-gradient-to-br from-rose-500 via-red-600 to-rose-700 text-white shadow-lg shadow-rose-500/30",
+        buttonClass: "bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 shadow-rose-600/25",
+        cardBorder: "hover:border-rose-400 hover:shadow-[0_16px_40px_rgba(225,29,72,0.18)]",
+        accentColor: "text-rose-700",
+      };
+    }
+    
+    // 5. The Chosen / Cine / Eventos especiales (Ámbar Dorado & Naranja)
+    if (c.includes("chosen") || c.includes("película") || c.includes("cine") || c.includes("proyección")) {
+      return {
+        badgeClass: "bg-amber-100 text-amber-950 border-amber-300 font-extrabold",
+        iconBoxClass: "bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 text-white shadow-lg shadow-amber-500/30",
+        buttonClass: "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 shadow-amber-600/25",
+        cardBorder: "hover:border-amber-400 hover:shadow-[0_16px_40px_rgba(245,158,11,0.2)]",
+        accentColor: "text-amber-800",
+      };
+    }
+    
+    // Default
+    return {
+      badgeClass: "bg-sky-100 text-sky-950 border-sky-300 font-extrabold",
+      iconBoxClass: "bg-gradient-to-br from-[#046BD2] to-sky-600 text-white shadow-lg shadow-blue-500/30",
+      buttonClass: "bg-gradient-to-r from-[#046BD2] to-sky-600 hover:from-blue-700 hover:to-sky-700 shadow-blue-600/25",
+      cardBorder: "hover:border-sky-400 hover:shadow-[0_16px_40px_rgba(4,107,210,0.18)]",
+      accentColor: "text-tierra",
+    };
+  };
+
+  const getScheduleMapUrl = (desc: string) => {
+    const d = (desc || "").toLowerCase();
+    if (d.includes("lavalle") || d.includes("cam") || d.includes("c.a.m.")) {
+      return "https://www.google.com/maps/search/?api=1&query=Lavalle+1660+Oberá+Misiones";
+    }
+    if (d.includes("rincon") || d.includes("rincón") || d.includes("fundacional")) {
+      return "https://www.google.com/maps/search/?api=1&query=Rincon+y+Reconquista+Oberá+Misiones";
+    }
+    return "https://www.google.com/maps/search/?api=1&query=Mensú+1177+Oberá+Misiones";
+  };
 
   // Load fresh Firestore data on client mount and subscribe to realtime livestream
   useEffect(() => {
@@ -57,10 +347,18 @@ export default function HomeClient({ initialData }: HomeClientProps) {
     };
     window.addEventListener("livestream-updated", handleLocalUpdate);
 
+    const handleHeroVideoUpdate = (e: any) => {
+      if (e?.detail) {
+        setData((prev) => ({ ...prev, heroVideo: e.detail }));
+      }
+    };
+    window.addEventListener("herovideo-updated", handleHeroVideoUpdate);
+
     return () => {
       unsubscribe();
       window.removeEventListener("open-livestream", handleOpenLive);
       window.removeEventListener("livestream-updated", handleLocalUpdate);
+      window.removeEventListener("herovideo-updated", handleHeroVideoUpdate);
     };
   }, []);
 
@@ -71,24 +369,16 @@ export default function HomeClient({ initialData }: HomeClientProps) {
         setIsLiveModalOpen(false);
         setSelectedVideo(null);
         setSelectedStudy(null);
-        setSelectedPhotoIndex(null);
-      }
-      if (selectedPhotoIndex !== null) {
-        if (e.key === "ArrowRight") {
-          setSelectedPhotoIndex((prev) => (prev !== null && prev < data.gallery.length - 1 ? prev + 1 : 0));
-        }
-        if (e.key === "ArrowLeft") {
-          setSelectedPhotoIndex((prev) => (prev !== null && prev > 0 ? prev - 1 : data.gallery.length - 1));
-        }
+        setSelectedEvent(null);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedPhotoIndex, data.gallery.length]);
+  }, []);
 
   // Lock body scroll when any modal is open
   useEffect(() => {
-    if (isLiveModalOpen || selectedVideo || selectedStudy || selectedPhotoIndex !== null) {
+    if (isLiveModalOpen || selectedVideo || selectedStudy || selectedEvent) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -96,7 +386,7 @@ export default function HomeClient({ initialData }: HomeClientProps) {
     return () => {
       document.body.style.overflow = "";
     };
-  }, [isLiveModalOpen, selectedVideo, selectedStudy, selectedPhotoIndex]);
+  }, [isLiveModalOpen, selectedVideo, selectedStudy, selectedEvent]);
 
   // Contact Form States
   const [contactName, setContactName] = useState("");
@@ -154,27 +444,43 @@ export default function HomeClient({ initialData }: HomeClientProps) {
 
       <section id="inicio" className="relative pt-16 pb-16 md:pt-24 md:pb-24 flex flex-col items-center justify-center text-center px-6 overflow-hidden">
         {/* Background Video con overlay de alto impacto */}
-        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden pointer-events-none">
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="w-full h-full object-cover filter brightness-75 contrast-110"
-          >
-            <source src="/bg-video.mp4" type="video/mp4" />
-          </video>
+        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden pointer-events-none flex items-center justify-center">
+          {heroVideoInfo.type === "facebook" ? (
+            <iframe
+              src={heroVideoInfo.embedUrl}
+              className="w-full h-full min-w-full min-h-full border-0 pointer-events-none filter brightness-75 contrast-110 scale-[1.35] sm:scale-115 md:scale-120"
+              style={{ border: "none", overflow: "hidden" }}
+              allow="autoplay; clipboard-write; encrypted-media; picture-in-picture"
+            />
+          ) : heroVideoInfo.type === "youtube" ? (
+            <iframe
+              src={heroVideoInfo.embedUrl}
+              className="w-full h-full min-w-full min-h-full border-0 pointer-events-none filter brightness-75 contrast-110 scale-[1.35] sm:scale-125"
+              style={{ border: "none" }}
+              allow="autoplay; encrypted-media"
+            />
+          ) : (
+            <video
+              src={heroVideoInfo.url || "/video.mp4"}
+              autoPlay
+              loop
+              muted
+              playsInline
+              key={heroVideoInfo.url}
+              className="w-full h-full object-cover filter brightness-75 contrast-110"
+            />
+          )}
           {/* Overlay oscuro para que el texto blanco y botones destaquen como en Iglesia de la Ciudad */}
           <div className="absolute inset-0 bg-gradient-to-b from-slate-900/60 via-slate-900/75 to-slate-900/90" />
         </div>
 
         <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center">
-          {/* Logo container */}
-          <div className="relative w-32 h-32 md:w-44 md:h-44 rounded-full overflow-hidden border-4 border-white shadow-[0_0_50px_rgba(4,107,210,0.35)] mb-8 bg-white">
+          {/* Logo central blanco con fondo transparente */}
+          <div className="relative w-36 sm:w-44 md:w-52 mb-6 flex items-center justify-center">
             <img 
-              src="/logo-hero.jpg" 
+              src="/logo-white.png" 
               alt="Logo Iglesia Buenas Nuevas" 
-              className="w-full h-full object-cover"
+              className="w-full h-auto object-contain filter drop-shadow-[0_10px_25px_rgba(0,0,0,0.6)] hover:scale-105 transition-transform duration-500"
             />
           </div>
 
@@ -235,112 +541,238 @@ export default function HomeClient({ initialData }: HomeClientProps) {
           </a>
           <span className="text-white/40 hidden md:inline">|</span>
           <span className="flex items-center gap-2.5 justify-center">
-            <img src="/logo.jpg" alt="Iglesia" className="w-4.5 h-4.5 rounded-full object-cover border border-white/50" /> {domingoSchedule ? `${domingoSchedule.titulo}: Domingos ${domingoSchedule.hora}` : "Culto Dominical: Domingos 19:30 hs"}
+            <img src="/logo-white.png" alt="Iglesia" className="w-5 h-5 object-contain" /> {domingoSchedule ? `${domingoSchedule.titulo}: Domingos ${domingoSchedule.hora}` : "Culto Dominical: Domingos 19:30 hs"}
           </span>
         </div>
       </div>
 
-      {/* HORARIOS & EVENTOS */}
-      <section id="horarios" className="relative z-10 py-20 border-b border-slate-200 bg-white">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="grid lg:grid-cols-12 gap-16 items-start">
+      {/* HORARIOS DE CULTO - TODOS EN UNA SOLA CARD */}
+      <section id="horarios" className="relative z-10 py-16 md:py-24 bg-[#EAF2F8] border-b border-slate-200">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <span className="text-[11px] font-bold text-tierra tracking-[0.2em] uppercase block mb-2">
+              Semanales
+            </span>
+            <h2 className="font-display text-3xl md:text-5xl font-extrabold text-slate-900 leading-tight">
+              Horarios de Culto y Actividades
+            </h2>
+            <div className="h-1 w-16 bg-tierra rounded-full mx-auto mt-4" />
+          </div>
+
+          {/* Tarjeta única con el modelo de Iglesia de la Ciudad */}
+          <div className="bg-white rounded-3xl p-6 sm:p-10 md:p-12 shadow-[0_12px_40px_rgba(0,0,0,0.08)] border border-slate-100 flex flex-col items-center text-center">
             
-            {/* Rutina de horarios */}
-            <div className="lg:col-span-5">
-              <span className="text-[11px] font-bold text-tierra tracking-[0.2em] uppercase block mb-2">
-                Semanales
-              </span>
-              <h2 className="font-display text-3xl md:text-4xl font-extrabold text-slate-900 leading-tight mb-4">
-                Horarios y Actividades Semanales
-              </h2>
-              <p className="text-slate-600 text-sm leading-relaxed mb-8">
-                Nos reunimos durante la semana para aprender de la Biblia, orar juntos y compartir en comunidad. ¡Te invitamos a sumarte al grupo que prefieras!
-              </p>
-              
-              <div className="flex flex-col gap-4">
-                {currentSchedules.map((item, idx) => (
-                  <div key={item.id || idx} className="glass-card rounded-2xl p-5 flex justify-between items-start gap-4 border border-slate-200 shadow-sm hover:shadow-md transition-all bg-slate-50/50">
-                    <div>
-                      <span className="text-[10px] font-bold text-tierra uppercase tracking-wider bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">
-                        {item.dia} · {item.hora}
-                      </span>
-                      <h3 className="font-display text-lg font-bold text-slate-900 mt-2">
-                        {item.titulo}
-                      </h3>
-                      <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                        {item.desc}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            {/* Ícono superior */}
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden shadow-md border-4 border-white flex items-center justify-center mb-6 shrink-0 bg-blue-50 text-tierra">
+              <svg viewBox="0 0 24 24" className="w-8 h-8 sm:w-10 sm:h-10 text-tierra" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+                <line x1="16" x2="16" y1="2" y2="6"/>
+                <line x1="8" x2="8" y1="2" y2="6"/>
+                <line x1="3" x2="21" y1="10" y2="10"/>
+                <path d="M12 14v4l2 1"/>
+              </svg>
             </div>
 
-            {/* Actividades y eventos dinámicos */}
-            <div id="eventos" className="lg:col-span-7">
-              <span className="text-[11px] font-bold text-tierra tracking-[0.2em] uppercase block mb-2">
-                Agenda
-              </span>
-              <h2 className="font-display text-3xl md:text-4xl font-extrabold text-slate-900 leading-tight mb-4">
-                Próximas Actividades
-              </h2>
-              <p className="text-slate-600 text-sm leading-relaxed mb-8">
-                Mantenete informado sobre los próximos acontecimientos especiales, retiros, actividades de servicio y celebraciones de nuestra iglesia.
-              </p>
+            {/* Título de la Card */}
+            <h3 className="font-display font-extrabold text-2xl sm:text-3xl md:text-4xl text-tierra leading-tight mb-3">
+              Nuestras Reuniones y Horarios
+            </h3>
 
-              {(() => {
-                const sortedEvents = [...(data.events || [])].sort((a, b) => {
-                  const timeA = new Date(a.date).getTime() || 0;
-                  const timeB = new Date(b.date).getTime() || 0;
-                  if (timeB !== timeA) return timeB - timeA;
-                  return (b.id || "").localeCompare(a.id || "");
-                });
+            {/* Descripción */}
+            <p className="text-slate-600 text-sm sm:text-base leading-relaxed mb-8 max-w-2xl font-normal">
+              Nos reunimos durante la semana para aprender de la Biblia, orar juntos y compartir en comunidad. ¡Te invitamos a sumarte al grupo que prefieras!
+            </p>
 
-                if (sortedEvents.length === 0) {
-                  return (
-                    <div className="border border-dashed border-slate-300 rounded-2xl p-10 text-center text-sm text-slate-500">
-                      No hay eventos programados en este momento.
-                    </div>
-                  );
-                }
-
+            {/* Grilla de horarios dentro de la card con colores vivos por actividad */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mb-8 text-left">
+              {currentSchedules.map((item, idx) => {
+                const theme = getScheduleTheme(item.titulo, item.desc);
                 return (
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    {sortedEvents.map((event: EventItem) => (
-                      <div key={event.id} className="glass-card rounded-2xl relative overflow-hidden flex flex-col h-full min-h-[14rem] border border-slate-200 shadow-sm hover:shadow-lg transition-all bg-white">
-                        {event.imageUrl && (
-                          <div className="w-full h-32 md:h-40 bg-slate-100 overflow-hidden">
-                            <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
-                          </div>
-                        )}
-                        <div className="p-6 flex flex-col flex-grow justify-between relative">
-                          {!event.imageUrl && <div className="absolute top-0 left-0 w-full h-[3px] bg-tierra" />}
-                          <div>
-                            <div className="flex justify-between items-center gap-2 mb-3">
-                              <span className="text-[9px] font-bold bg-blue-50 text-tierra border border-blue-200 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                                {event.category}
-                              </span>
-                              <span className="text-[10px] font-bold text-slate-500">
-                                {event.time}
-                              </span>
-                            </div>
-                            <h3 className="font-display text-base font-bold text-slate-900 line-clamp-2 leading-tight">
-                              {event.title}
-                            </h3>
-                            <p className="text-xs text-slate-600 mt-2.5 line-clamp-3 leading-relaxed">
-                              {event.description}
-                            </p>
-                          </div>
-                          
-                          <div className="text-[11px] font-semibold text-slate-400 border-t border-slate-100 pt-3.5 mt-4 uppercase tracking-wider">
-                            📅 {formatDate(event.date)}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                  <div
+                    key={item.id || idx}
+                    className={`p-4 sm:p-5 rounded-2xl border transition-all duration-300 flex items-start gap-4 ${theme.containerClass}`}
+                  >
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 mt-0.5 shadow-md ${theme.iconBoxClass}`}>
+                      {getScheduleIcon(item.titulo, item.desc, "w-6 h-6 text-white")}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className={`inline-block text-[10px] font-extrabold border px-2.5 py-0.5 rounded-full uppercase tracking-wider mb-1.5 shadow-xs ${theme.badgeClass}`}>
+                        {item.dia} · {item.hora}
+                      </span>
+                      <h4 className={`font-display font-bold text-base leading-snug ${theme.titleColor}`}>
+                        {item.titulo}
+                      </h4>
+                      {item.desc && (
+                        <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                          {item.desc}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 );
-              })()}
+              })}
+            </div>
+
+            {/* Botones de acción */}
+            <div className="w-full flex flex-wrap items-center justify-center gap-3 pt-4 border-t border-slate-100">
+              <a
+                href="https://www.google.com/maps/search/?api=1&query=Mensú+1177+Oberá+Misiones"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto min-w-[200px] bg-tierra hover:bg-tierra-dark text-white font-bold text-xs uppercase tracking-wider py-3.5 px-6 rounded-lg shadow-sm hover:shadow transition-all duration-200 text-center flex items-center justify-center gap-2"
+              >
+                <span>📍 CÓMO LLEGAR (TEMPLO CENTRAL)</span>
+              </a>
+              <a
+                href="#contacto"
+                className="w-full sm:w-auto min-w-[180px] bg-white hover:bg-slate-50 text-tierra border-2 border-tierra font-bold text-xs uppercase tracking-wider py-3.5 px-6 rounded-lg shadow-xs hover:shadow transition-all duration-200 text-center flex items-center justify-center gap-2"
+              >
+                <span>CONTACTARNOS</span>
+              </a>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* PRÓXIMAS ACTIVIDADES - EN UNA SOLA CARD */}
+      <section id="eventos" className="relative z-10 py-16 md:py-24 bg-white border-b border-slate-200">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <span className="text-[11px] font-bold text-tierra tracking-[0.2em] uppercase block mb-2">
+              Agenda
+            </span>
+            <h2 className="font-display text-3xl md:text-5xl font-extrabold text-slate-900 leading-tight">
+              Próximas Actividades
+            </h2>
+            <div className="h-1 w-16 bg-tierra rounded-full mx-auto mt-4" />
+          </div>
+
+          {/* Tarjeta única con el modelo de Iglesia de la Ciudad */}
+          <div className="bg-white rounded-3xl p-6 sm:p-10 md:p-12 shadow-[0_12px_40px_rgba(0,0,0,0.08)] border border-slate-100 flex flex-col items-center text-center">
+            
+            {/* Ícono superior */}
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden shadow-md border-4 border-white flex items-center justify-center mb-6 shrink-0 bg-blue-50 text-tierra">
+              <svg viewBox="0 0 24 24" className="w-8 h-8 sm:w-10 sm:h-10 text-tierra" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+                <line x1="16" x2="16" y1="2" y2="6"/>
+                <line x1="8" x2="8" y1="2" y2="6"/>
+                <line x1="3" x2="21" y1="10" y2="10"/>
+                <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/>
+              </svg>
+            </div>
+
+            {/* Título de la Card */}
+            <h3 className="font-display font-extrabold text-2xl sm:text-3xl md:text-4xl text-tierra leading-tight mb-3">
+              Agenda y Eventos Especiales
+            </h3>
+
+            {/* Descripción */}
+            <p className="text-slate-600 text-sm sm:text-base leading-relaxed mb-8 max-w-2xl font-normal">
+              Mantenete informado sobre los próximos acontecimientos especiales, retiros, actividades de servicio y celebraciones de nuestra iglesia.
+            </p>
+
+            {(() => {
+              const sortedEvents = [...(data.events || [])].sort((a, b) => {
+                const timeA = new Date(a.date).getTime() || 0;
+                const timeB = new Date(b.date).getTime() || 0;
+                if (timeB !== timeA) return timeB - timeA;
+                return (b.id || "").localeCompare(a.id || "");
+              });
+
+              if (sortedEvents.length === 0) {
+                return (
+                  <div className="w-full border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center text-slate-500 bg-slate-50 mb-8">
+                    <div className="w-12 h-12 rounded-full bg-blue-50 text-tierra mx-auto flex items-center justify-center text-xl mb-3">
+                      📅
+                    </div>
+                    <h4 className="font-display font-bold text-slate-800 text-base mb-1">
+                      No hay eventos programados en este momento
+                    </h4>
+                    <p className="text-xs text-slate-500">
+                      Pronto estaremos publicando nuevas fechas y actividades especiales.
+                    </p>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mb-8 text-left">
+                  {sortedEvents.map((event: EventItem) => {
+                    const evTheme = getEventTheme(event.category, event.title);
+                    return (
+                      <div
+                        key={event.id}
+                        onClick={() => setSelectedEvent(event)}
+                        className={`p-4 sm:p-5 rounded-2xl bg-slate-50/90 hover:bg-white border border-slate-200/80 transition-all duration-200 flex flex-col justify-between cursor-pointer group shadow-xs hover:shadow-md ${evTheme.cardBorder}`}
+                      >
+                        <div>
+                          <div className="flex items-start gap-4 mb-3">
+                            {event.imageUrl ? (
+                              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 shadow-xs border border-slate-200 bg-slate-100">
+                                <img
+                                  src={event.imageUrl}
+                                  alt={event.title}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                />
+                              </div>
+                            ) : (
+                              <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center shrink-0 shadow-md ${evTheme.iconBoxClass}`}>
+                                {getEventCategoryIcon(event.category, event.title, "w-6 h-6 sm:w-7 sm:h-7 text-white")}
+                              </div>
+                            )}
+
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
+                                <span className={`text-[10px] font-extrabold border px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-xs ${evTheme.badgeClass}`}>
+                                  {event.category || "Actividad"}
+                                </span>
+                                <span className="text-[11px] font-semibold text-slate-500">
+                                  📅 {formatDate(event.date)} · {event.time}
+                                </span>
+                              </div>
+                              <h4 className="font-display font-bold text-base sm:text-lg text-slate-900 leading-snug group-hover:text-tierra transition-colors">
+                                {event.title}
+                              </h4>
+                            </div>
+                          </div>
+
+                          <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed mb-3">
+                            {event.description}
+                          </p>
+                        </div>
+
+                        <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                          <span className="text-[11px] font-bold text-tierra group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
+                            Ver más detalles <span>→</span>
+                          </span>
+                          <span className={`text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-md text-white ${evTheme.buttonClass}`}>
+                            Info
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+
+            {/* Botones de acción inferiores */}
+            <div className="w-full flex flex-wrap items-center justify-center gap-3 pt-4 border-t border-slate-100">
+              <a
+                href="#contacto"
+                className="w-full sm:w-auto min-w-[200px] bg-tierra hover:bg-tierra-dark text-white font-bold text-xs uppercase tracking-wider py-3.5 px-6 rounded-lg shadow-sm hover:shadow transition-all duration-200 text-center flex items-center justify-center gap-2"
+              >
+                <span>💬 CONSULTAR POR ACTIVIDADES</span>
+              </a>
+              <a
+                href="https://wa.me/543755629896?text=Hola!%20Quisiera%20consultar%20sobre%20las%20próximas%20actividades"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto min-w-[180px] bg-white hover:bg-slate-50 text-tierra border-2 border-tierra font-bold text-xs uppercase tracking-wider py-3.5 px-6 rounded-lg shadow-xs hover:shadow transition-all duration-200 text-center flex items-center justify-center gap-2"
+              >
+                <span>WHATSAPP DIRECTO</span>
+              </a>
             </div>
 
           </div>
@@ -514,11 +946,11 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-slate-100">
+                        <div className="w-full h-full flex items-center justify-center bg-slate-900/50">
                           <img 
-                            src="/logo-hero.jpg" 
+                            src="/logo-white.png" 
                             alt="Transmisión en vivo" 
-                            className="w-24 h-24 object-cover rounded-full border-2 border-white opacity-85 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500 shadow-lg"
+                            className="w-24 h-24 object-contain filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] opacity-85 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
                           />
                         </div>
                       )}
@@ -615,7 +1047,7 @@ export default function HomeClient({ initialData }: HomeClientProps) {
       </section>
 
       {/* ESTUDIOS & PODCASTS (TABS INTERACTIVAS) */}
-      <section className="relative z-10 py-20 border-b border-slate-200 bg-white">
+      <section id="estudios" className="relative z-10 py-20 border-b border-slate-200 bg-white">
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex flex-col items-center mb-12">
             {/* Tab switch buttons */}
@@ -756,30 +1188,128 @@ export default function HomeClient({ initialData }: HomeClientProps) {
             </p>
           </div>
 
-          {data.gallery.length === 0 ? (
+          {galleryList.length === 0 ? (
             <div className="border border-dashed border-slate-300 rounded-2xl p-10 text-center text-sm text-slate-500">
               La galería de fotos está vacía.
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {data.gallery.map((photo: string, idx: number) => (
-                <button 
-                  type="button"
-                  key={idx} 
-                  onClick={() => setSelectedPhotoIndex(idx)}
-                  className="relative aspect-square w-full rounded-2xl overflow-hidden border border-slate-200 bg-white group cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-tierra transition-all p-0 block shadow-sm hover:shadow-md"
+            <div 
+              className="relative max-w-5xl mx-auto"
+              onMouseEnter={() => setIsGalleryPaused(true)}
+              onMouseLeave={() => setIsGalleryPaused(false)}
+            >
+              {/* SLIDE PRINCIPAL DEL CARRUSEL: DESPLAZAMIENTO DE DERECHA A IZQUIERDA */}
+              <div className="relative h-[400px] sm:h-[480px] md:h-[560px] w-full rounded-3xl overflow-hidden shadow-xl border border-slate-200 bg-slate-950 group">
+                {/* TRACK DESLIZANTE HORIZONTAL */}
+                <div 
+                  className="flex h-full w-full transition-transform duration-700 ease-out"
+                  style={{ transform: `translateX(-${gallerySlide * 100}%)` }}
                 >
-                  <img
-                    src={photo}
-                    alt={`Galería de iglesia ${idx + 1}`}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none"
-                  />
-                  <div className="absolute inset-0 bg-slate-900/10 group-hover:bg-slate-900/35 transition-colors duration-300 pointer-events-none" />
-                  <div className="absolute bottom-4 left-4 text-[10px] text-white/0 group-hover:text-white font-bold uppercase tracking-wider transition-all duration-300 pointer-events-none flex items-center gap-1.5">
-                    🔍 Ampliar Foto
+                  {galleryList.map((photo, idx) => (
+                    <div
+                      key={idx}
+                      className="relative h-full w-full shrink-0 flex items-center justify-center overflow-hidden"
+                    >
+                      {/* Fondo ambiental desenfocado con los tonos de la imagen */}
+                      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                        <img
+                          src={photo}
+                          alt=""
+                          aria-hidden="true"
+                          className="w-full h-full object-cover blur-2xl scale-125 opacity-35 filter brightness-75 select-none"
+                        />
+                      </div>
+
+                      {/* Imagen principal: 100% visible en su totalidad sin ningún recorte */}
+                      <div className="relative w-full h-full flex items-center justify-center p-3 sm:p-6 z-10">
+                        <img
+                          src={photo}
+                          alt={`Comunidad Buenas Nuevas - Foto ${idx + 1}`}
+                          className="max-h-full max-w-full w-auto h-auto object-contain rounded-2xl shadow-2xl select-none"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Overlay sutil con gradiente para indicadores */}
+                <div className="absolute inset-0 z-20 pointer-events-none flex flex-col justify-between p-4 sm:p-6 bg-gradient-to-t from-slate-950/40 via-transparent to-slate-950/20">
+                  {/* Top Bar: Contador */}
+                  <div className="flex justify-between items-center w-full">
+                    <span className="bg-black/60 backdrop-blur-md text-white text-xs font-bold px-3.5 py-1.5 rounded-full border border-white/20 uppercase tracking-wider shadow-sm">
+                      📸 Foto {gallerySlide + 1} de {galleryList.length}
+                    </span>
                   </div>
+
+                  {/* Bottom Bar: Indicador de estado */}
+                  <div className="text-white text-xs font-medium flex items-center justify-end">
+                    <span className="hidden sm:inline-block opacity-85 drop-shadow bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full border border-white/10">
+                      {isGalleryPaused ? "⏸️ Pausado al pasar el cursor" : "▶️ Reproducción automática"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* BOTÓN ANTERIOR (‹) */}
+                <button
+                  type="button"
+                  onClick={handlePrevPhoto}
+                  className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-13 sm:h-13 rounded-full bg-white/90 hover:bg-white text-slate-900 shadow-xl flex items-center justify-center text-xl sm:text-2xl font-black transition-all hover:scale-110 active:scale-95 cursor-pointer z-30 border border-slate-200"
+                  aria-label="Foto anterior"
+                >
+                  ‹
                 </button>
-              ))}
+
+                {/* BOTÓN SIGUIENTE (›) */}
+                <button
+                  type="button"
+                  onClick={handleNextPhoto}
+                  className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-13 sm:h-13 rounded-full bg-white/90 hover:bg-white text-slate-900 shadow-xl flex items-center justify-center text-xl sm:text-2xl font-black transition-all hover:scale-110 active:scale-95 cursor-pointer z-30 border border-slate-200"
+                  aria-label="Foto siguiente"
+                >
+                  ›
+                </button>
+              </div>
+
+              {/* TIRA DE MINIATURAS DEL CARRUSEL */}
+              <div className="mt-4 flex items-center gap-2.5 overflow-x-auto py-2 px-1 scrollbar-thin scrollbar-thumb-slate-300">
+                {galleryList.map((photo: string, idx: number) => {
+                  const isActive = idx === gallerySlide;
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setGallerySlide(idx)}
+                      className={`relative w-16 h-12 sm:w-20 sm:h-14 rounded-xl overflow-hidden shrink-0 transition-all cursor-pointer ${
+                        isActive
+                          ? "ring-3 ring-tierra scale-105 shadow-md opacity-100"
+                          : "opacity-50 hover:opacity-100 border border-slate-200"
+                      }`}
+                    >
+                      <img
+                        src={photo}
+                        alt={`Miniatura ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* INDICADORES DE PUNTOS / PAGINACIÓN */}
+              <div className="flex flex-wrap items-center justify-center gap-1.5 mt-4">
+                {galleryList.map((_, idx: number) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setGallerySlide(idx)}
+                    className={`h-2 rounded-full transition-all cursor-pointer ${
+                      idx === gallerySlide ? "w-7 bg-tierra" : "w-2 bg-slate-300 hover:bg-slate-400"
+                    }`}
+                    aria-label={`Ir a foto ${idx + 1}`}
+                  />
+                ))}
+              </div>
+
             </div>
           )}
         </div>
@@ -977,65 +1507,74 @@ export default function HomeClient({ initialData }: HomeClientProps) {
         </div>
       )}
 
-      {/* PHOTO LIGHTBOX MODAL */}
-      {selectedPhotoIndex !== null && data.gallery && data.gallery[selectedPhotoIndex] && (
+      {/* EVENT MODAL */}
+      {selectedEvent && (
         <div 
-          onClick={() => setSelectedPhotoIndex(null)}
-          className="fixed inset-0 flex items-center justify-center bg-slate-950/90 p-4 md:p-8 backdrop-blur-md animate-fade-in"
-          style={{ zIndex: 99999 }}
+          onClick={() => setSelectedEvent(null)}
+          className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-900/80 p-4 backdrop-blur-sm overflow-y-auto animate-fade-in"
         >
           <div 
             onClick={(e) => e.stopPropagation()}
-            className="relative max-w-5xl max-h-[90vh] flex flex-col items-center justify-center"
+            className="relative w-full max-w-2xl bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-2xl my-8 text-slate-800"
           >
-            {/* Close Button */}
             <button
               type="button"
-              onClick={() => setSelectedPhotoIndex(null)}
-              className="absolute -top-12 right-0 bg-white/20 hover:bg-white/40 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg transition-colors z-50 cursor-pointer shadow-lg"
-              title="Cerrar (Esc)"
+              onClick={() => setSelectedEvent(null)}
+              className="absolute top-4 right-4 bg-slate-100 hover:bg-slate-200 text-slate-600 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-colors cursor-pointer"
             >
               ✕
             </button>
 
-            {/* Main Image */}
-            <div className="relative overflow-hidden rounded-2xl border border-white/20 shadow-2xl bg-black">
-              <img
-                src={data.gallery[selectedPhotoIndex]}
-                alt={`Foto ampliada ${selectedPhotoIndex + 1}`}
-                className="max-h-[75vh] max-w-[90vw] md:max-w-4xl object-contain block rounded-2xl select-none"
-              />
+            {selectedEvent.imageUrl && (
+              <div className="w-full h-56 sm:h-72 rounded-2xl overflow-hidden mb-6 bg-slate-100 border border-slate-100 shadow-sm">
+                <img
+                  src={selectedEvent.imageUrl}
+                  alt={selectedEvent.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <span className="text-[10px] font-bold bg-blue-50 text-tierra border border-blue-200 px-3 py-1 rounded-full uppercase tracking-wider">
+                {selectedEvent.category || "Actividad"}
+              </span>
+              <span className="text-xs font-bold text-slate-500">
+                📅 {formatDate(selectedEvent.date)} · 🕒 {selectedEvent.time}
+              </span>
             </div>
 
-            {/* Navigation & Counter Bar */}
-            <div className="mt-4 flex items-center gap-6 text-white text-xs font-bold uppercase tracking-wider">
-              {data.gallery.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => setSelectedPhotoIndex((prev) => (prev !== null && prev > 0 ? prev - 1 : data.gallery.length - 1))}
-                  className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sky-400 px-4 py-2 rounded-full transition-all flex items-center gap-1.5 cursor-pointer hover:scale-105"
-                >
-                  ← Anterior
-                </button>
-              )}
+            <h3 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900 mb-4 leading-tight">
+              {selectedEvent.title}
+            </h3>
 
-              <span className="text-slate-300 bg-slate-800/80 px-3 py-1.5 rounded-full border border-slate-700 text-[11px]">
-                {selectedPhotoIndex + 1} / {data.gallery.length}
-              </span>
+            <div className="h-px bg-slate-100 mb-5" />
 
-              {data.gallery.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => setSelectedPhotoIndex((prev) => (prev !== null && prev < data.gallery.length - 1 ? prev + 1 : 0))}
-                  className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sky-400 px-4 py-2 rounded-full transition-all flex items-center gap-1.5 cursor-pointer hover:scale-105"
-                >
-                  Siguiente →
-                </button>
-              )}
+            <p className="text-sm sm:text-base text-slate-700 leading-relaxed whitespace-pre-wrap mb-8">
+              {selectedEvent.description}
+            </p>
+
+            <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-100">
+              <a
+                href={`https://wa.me/543755629896?text=${encodeURIComponent("Hola! Quisiera más información sobre la actividad: " + selectedEvent.title)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-tierra hover:bg-tierra-dark text-white text-xs font-bold uppercase tracking-wider px-6 py-3 rounded-full transition-all shadow-md hover:shadow-lg flex items-center gap-2"
+              >
+                <span>💬 Consultar por WhatsApp</span>
+              </a>
+              <button
+                type="button"
+                onClick={() => setSelectedEvent(null)}
+                className="border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-bold uppercase tracking-wider px-6 py-3 rounded-full transition-all cursor-pointer"
+              >
+                Cerrar
+              </button>
             </div>
           </div>
         </div>
       )}
+
 
       {/* LIVE STREAM MODAL (POPUP ON CLICK "VER EN VIVO") */}
       {isLiveModalOpen && data.liveStream && (

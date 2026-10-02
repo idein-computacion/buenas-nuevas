@@ -7,11 +7,11 @@ export default function Footer() {
         {/* Columna Marca */}
         <div className="md:col-span-2">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-slate-700 bg-white">
+            <div className="h-10 md:h-12 w-auto flex items-center justify-center shrink-0">
               <img 
-                src="/logo.jpg" 
+                src="/logo-white.png" 
                 alt="Logo Buenas Nuevas" 
-                className="w-full h-full object-cover"
+                className="h-10 md:h-12 w-auto object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]"
               />
             </div>
             <div className="flex flex-col">
