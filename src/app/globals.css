@@ -1,15 +1,16 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Open+Sans:wght@300;400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,600&family=Roboto:wght@300;400;500;700&family=Roboto+Condensed:wght@400;600;700&display=swap');
 @import "tailwindcss";
 
 :root {
-  --color-crema: #0A0A0A;       /* Negro background */
-  --color-monte: #1C1C1C;       /* Gris1 cards */
-  --color-monte-dark: #111111;  /* Oscuro header/footer */
-  --color-tierra: #C8A84B;      /* Dorado primary */
-  --color-tierra-dark: #A68735;  /* Dorado dark */
-  --color-dorado: #E2C06A;      /* Dorado2 highlight */
-  --color-texto: #FFFFFF;       /* Blanco text */
-  --color-texto-muted: #B3B3B3; /* Blanco2 text (rgba 255,255,255,0.70) */
+  --color-crema: #F8FAFC;       /* Fondo claro luminoso (Slate-50) */
+  --color-monte: #FFFFFF;       /* Blanco puro tarjetas y superficies */
+  --color-monte-dark: #0F172A;  /* Slate-900 Footer y contrastes oscuros */
+  --color-tierra: #046BD2;      /* Azul institucional primario (Iglesia de la Ciudad) */
+  --color-tierra-dark: #045CB4; /* Azul oscuro hover */
+  --color-dorado: #046BD2;      /* Azul de acento / acción */
+  --color-naranja: #FC752E;     /* Naranja cálido llamadas a la acción (Iglesia de la Ciudad) */
+  --color-texto: #1E293B;       /* Texto títulos y cuerpo principal (Slate-800) */
+  --color-texto-muted: #64748B; /* Texto secundario y descripciones (Slate-500) */
 }
 
 @theme inline {
@@ -19,10 +20,11 @@
   --color-tierra: var(--color-tierra);
   --color-tierra-dark: var(--color-tierra-dark);
   --color-dorado: var(--color-dorado);
+  --color-naranja: var(--color-naranja);
   --color-texto: var(--color-texto);
   --color-texto-muted: var(--color-texto-muted);
-  --font-display: 'Playfair Display', serif;
-  --font-body: 'Open Sans', sans-serif;
+  --font-display: 'Montserrat', sans-serif;
+  --font-body: 'Roboto', sans-serif;
 }
 
 body {
@@ -31,34 +33,35 @@ body {
   font-family: var(--font-body);
 }
 
-h1, h2, h3, .font-display {
+h1, h2, h3, h4, h5, h6, .font-display {
   font-family: var(--font-display);
 }
 
-/* Glassmorphism helpers matching cover template */
+/* Glassmorphism y contenedores inspirados en Iglesia de la Ciudad */
 .glass {
-  background: rgba(28, 28, 28, 0.75);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(200, 168, 75, 0.15);
+  border: 1px solid #E2E8F0;
 }
 
 .glass-nav {
-  background: rgba(10, 10, 10, 0.95);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(200, 168, 75, 0.18);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid #E2E8F0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
 }
 
 .glass-card {
-  background: rgba(28, 28, 28, 0.6);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-card:hover {
-  border-color: rgba(200, 168, 75, 0.3);
-  transform: translateY(-2px);
-  background: rgba(42, 42, 42, 0.85); /* gris2 background */
+  border-color: #CBD5E1;
+  box-shadow: 0 12px 28px -4px rgba(4, 107, 210, 0.12);
+  transform: translateY(-3px);
 }
 
 /* Custom Scrollbar */
@@ -66,10 +69,10 @@ h1, h2, h3, .font-display {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--color-monte-dark);
+  background: #F1F5F9;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-monte);
+  background: #CBD5E1;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {

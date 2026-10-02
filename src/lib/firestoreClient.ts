@@ -17,6 +17,9 @@ export function getCachedDbData(): DbData | null {
           if (!parsed.schedules || parsed.schedules.length === 0) {
             parsed.schedules = defaultData.schedules;
           }
+          if (!parsed.heroVideo || parsed.heroVideo === "/bg-video.mp4") {
+            parsed.heroVideo = defaultData.heroVideo || "/video.mp4";
+          }
           return parsed;
         }
       } catch (e) {}
@@ -58,6 +61,9 @@ export async function getDbDataClient(): Promise<DbData | null> {
       
       if (data && (!data.schedules || data.schedules.length === 0)) {
         data.schedules = defaultData.schedules;
+      }
+      if (data && (!data.heroVideo || data.heroVideo === "/bg-video.mp4")) {
+        data.heroVideo = defaultData.heroVideo || "/video.mp4";
       }
 
       if (typeof window !== "undefined" && data) {
@@ -136,6 +142,17 @@ export async function updateLiveStreamClient(liveStream: any): Promise<boolean> 
   if (res && typeof window !== "undefined") {
     window.dispatchEvent(new CustomEvent("livestream-updated", { detail: liveStream }));
     localStorage.setItem("bn_livestream_sync", JSON.stringify(liveStream));
+  }
+  return res;
+}
+
+export async function updateHeroVideoClient(heroVideo: string): Promise<boolean> {
+  const db = await getDbDataClient();
+  if (!db) return false;
+  db.heroVideo = heroVideo;
+  const res = await saveWholeDb(db);
+  if (res && typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("herovideo-updated", { detail: heroVideo }));
   }
   return res;
 }

@@ -85,3 +85,38 @@ export function getYouTubeThumbnail(url: string): string | null {
   return null;
 }
 
+export interface HeroVideoInfo {
+  type: "facebook" | "youtube" | "video";
+  url: string;
+  embedUrl: string;
+}
+
+export function getHeroVideoInfo(rawUrl?: string): HeroVideoInfo {
+  let url = (rawUrl || "/video.mp4").trim();
+  if (!url) {
+    return { type: "video", url: "/video.mp4", embedUrl: "/video.mp4" };
+  }
+
+  // Si pegó una ruta de archivo local de Windows (ej: C:\Users\... o file://)
+  if (url.match(/^[a-zA-Z]:[\\\/]/) || url.startsWith("file://") || url.includes("Fotos Buenas Nuevas")) {
+    url = "/video.mp4";
+  }
+
+  // 1. Facebook video or reel
+  if (url.includes("facebook.com") || url.includes("fb.watch")) {
+    const embedUrl = `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=false&mute=1&autoplay=1&loop=1`;
+    return { type: "facebook", url, embedUrl };
+  }
+
+  // 2. YouTube video or short
+  const ytId = extractYouTubeId(url);
+  if (ytId) {
+    const embedUrl = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${ytId}&playsinline=1&showinfo=0&rel=0`;
+    return { type: "youtube", url, embedUrl };
+  }
+
+  // 3. Direct HTML5 video (.mp4, .webm, local file, etc.)
+  return { type: "video", url, embedUrl: url };
+}
+
+

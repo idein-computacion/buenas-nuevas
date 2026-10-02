@@ -52,22 +52,22 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 glass-nav">
+    <header className="sticky top-0 z-50 bg-gradient-to-r from-[#072B61] via-[#09428F] to-[#0B54B8] text-white shadow-lg border-b border-[#072B61]">
       <nav className="mx-auto max-w-6xl px-6 py-3.5 flex items-center justify-between">
         {/* LOGO */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-14 h-14 rounded-full overflow-hidden border border-dorado/30 group-hover:border-dorado transition-colors shadow-md">
+          <div className="h-10 md:h-12 w-auto flex items-center justify-center shrink-0">
             <img 
-              src="/logo.jpg" 
+              src="/logo-white.png" 
               alt="Logo Buenas Nuevas" 
-              className="w-full h-full object-cover"
+              className="h-10 md:h-12 w-auto object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)] group-hover:scale-105 transition-transform"
             />
           </div>
           <div className="flex flex-col">
-            <span className="font-display text-base md:text-lg font-bold text-texto leading-none tracking-tight">
+            <span className="font-display text-base md:text-lg font-bold text-white leading-none tracking-tight">
               Buenas Nuevas
             </span>
-            <span className="text-[10px] text-tierra font-semibold tracking-[0.1em] uppercase mt-0.5 leading-none">
+            <span className="text-[10px] text-sky-300 font-bold tracking-[0.14em] uppercase mt-1 leading-none">
               Para Todos
             </span>
           </div>
@@ -79,7 +79,7 @@ export default function Navbar() {
             <Link
               key={l.href}
               href={l.href}
-              className="text-xs font-semibold text-texto/80 hover:text-dorado tracking-wide uppercase transition-colors"
+              className="text-xs font-bold text-white/90 hover:text-white tracking-wider uppercase transition-colors hover:bg-white/10 px-2.5 py-1.5 rounded-full"
             >
               {l.label}
             </Link>
@@ -89,28 +89,25 @@ export default function Navbar() {
           <Link
             href="/#mensajes"
             onClick={handleLiveClick}
-            className={`text-xs font-bold px-4 py-2 rounded-full transition-all flex items-center gap-2 uppercase tracking-wider ${
+            className={`text-xs font-bold px-4 py-2 rounded-full transition-colors flex items-center gap-2 uppercase tracking-wider ${
               isLive
-                ? "bg-red-600 hover:bg-red-700 text-white shadow-[0_0_25px_rgba(239,68,68,0.75)] animate-pulse border border-red-500"
-                : "bg-monte-dark/60 hover:bg-monte text-texto-muted/70 hover:text-white border border-red-500/50 hover:border-red-500 opacity-75 hover:opacity-100"
+                ? "bg-red-600 hover:bg-red-700 text-white shadow-sm"
+                : "bg-white/15 hover:bg-white/25 text-white border border-white/30"
             }`}
           >
             {isLive ? (
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-90"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
-              </span>
+              <span className="inline-flex rounded-full h-2 w-2 bg-white" />
             ) : (
-              <span className="inline-flex rounded-full h-2 w-2 bg-zinc-600"></span>
+              <span className="inline-flex rounded-full h-2 w-2 bg-red-400" />
             )}
             Ver En Vivo
           </Link>
           
-          <div className="h-4 w-px bg-white/10"></div>
+          <div className="h-4 w-px bg-white/25"></div>
           
           <Link
             href="/admin"
-            className="text-xs font-semibold border border-texto/30 hover:border-dorado text-texto hover:text-dorado px-4 py-2 rounded transition-colors tracking-wide uppercase flex items-center gap-1.5"
+            className="text-xs font-bold border-2 border-white text-white hover:bg-white hover:text-[#09428F] px-4 py-1.5 rounded-full transition-all tracking-wider uppercase flex items-center gap-1.5 shadow-sm"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
@@ -125,57 +122,51 @@ export default function Navbar() {
           <Link
             href="/#mensajes"
             onClick={handleLiveClick}
-            className={`text-[10px] font-bold px-3 py-1.5 rounded-full transition-all flex items-center gap-1.5 uppercase tracking-wider ${
+            className={`text-[10px] font-bold px-3 py-1.5 rounded-full transition-colors flex items-center gap-1.5 uppercase tracking-wider ${
               isLive
-                ? "bg-red-600 text-white shadow-[0_0_18px_rgba(239,68,68,0.7)] animate-pulse border border-red-500"
-                : "bg-monte-dark/60 text-texto-muted/70 border border-red-500/50 opacity-75"
+                ? "bg-red-600 text-white shadow-sm"
+                : "bg-white/15 text-white border border-white/30"
             }`}
           >
             {isLive ? (
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-90"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
-              </span>
+              <span className="inline-flex rounded-full h-1.5 w-1.5 bg-white" />
             ) : (
-              <span className="inline-flex rounded-full h-1.5 w-1.5 bg-zinc-600"></span>
+              <span className="inline-flex rounded-full h-1.5 w-1.5 bg-red-400" />
             )}
-            Ver En Vivo
+            En Vivo
           </Link>
 
           {/* MOBILE TOGGLE */}
           <button
             onClick={() => setOpen(!open)}
-            className="flex flex-col gap-1.5 p-2 rounded hover:bg-white/5 transition-colors"
+            className="flex flex-col gap-1.5 p-2 rounded-lg hover:bg-white/15 transition-colors"
             aria-label="Abrir menú"
             aria-expanded={open}
           >
-            <span className="w-6 h-0.5 bg-texto" />
-            <span className="w-6 h-0.5 bg-texto" />
-            <span className="w-6 h-0.5 bg-texto" />
+            <span className="w-6 h-0.5 bg-white" />
+            <span className="w-6 h-0.5 bg-white" />
+            <span className="w-6 h-0.5 bg-white" />
           </button>
         </div>
       </nav>
 
       {/* MOBILE MENU */}
       {open && (
-        <div className="md:hidden px-6 pb-6 flex flex-col gap-4 border-t border-white/5 pt-4 bg-monte-dark/95 backdrop-blur-lg">
+        <div className="md:hidden px-6 pb-6 flex flex-col gap-3.5 border-t border-white/15 pt-4 bg-[#072B61] text-white shadow-xl">
           {/* BOTON EN VIVO DESTACADO EN MOVIL */}
           <Link
             href="/#mensajes"
             onClick={handleLiveClick}
-            className={`text-xs font-bold px-4 py-3 rounded-xl transition-all flex items-center justify-center gap-2 uppercase tracking-wider text-center ${
+            className={`text-xs font-bold px-4 py-3 rounded-full transition-colors flex items-center justify-center gap-2 uppercase tracking-wider text-center ${
               isLive
-                ? "bg-red-600 text-white shadow-[0_0_25px_rgba(239,68,68,0.7)] animate-pulse border border-red-500"
-                : "bg-monte-dark/60 text-texto-muted/70 border border-red-500/50 opacity-80"
+                ? "bg-red-600 text-white shadow-sm"
+                : "bg-white/15 text-white border border-white/30"
             }`}
           >
             {isLive ? (
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-90"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
-              </span>
+              <span className="inline-flex rounded-full h-2 w-2 bg-white" />
             ) : (
-              <span className="inline-flex rounded-full h-2 w-2 bg-zinc-600"></span>
+              <span className="inline-flex rounded-full h-2 w-2 bg-red-400" />
             )}
             Ver En Vivo
           </Link>
@@ -185,7 +176,7 @@ export default function Navbar() {
               key={l.href}
               href={l.href}
               onClick={() => setOpen(false)}
-              className="text-sm font-semibold text-texto/80 hover:text-dorado tracking-wide uppercase"
+              className="text-sm font-bold text-white/90 hover:text-white tracking-wide uppercase py-1.5 border-b border-white/10"
             >
               {l.label}
             </Link>
@@ -194,7 +185,7 @@ export default function Navbar() {
           <Link
             href="/admin"
             onClick={() => setOpen(false)}
-            className="text-sm font-semibold text-dorado tracking-wide uppercase flex items-center gap-2 mt-2 pt-4 border-t border-white/5"
+            className="text-sm font-bold text-sky-200 hover:text-white tracking-wide uppercase flex items-center gap-2 mt-1 pt-3 border-t border-white/15"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />

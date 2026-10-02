@@ -13,6 +13,12 @@ export function getCachedDbData(): DbData {
           if (!parsed.schedules || parsed.schedules.length === 0) {
             parsed.schedules = defaultData.schedules;
           }
+          if (!parsed.gallery || parsed.gallery.length === 0 || (parsed.gallery[0] && parsed.gallery[0].includes('/uploads/'))) {
+            parsed.gallery = defaultData.gallery;
+          }
+          if (!parsed.heroVideo || parsed.heroVideo === "/bg-video.mp4") {
+            parsed.heroVideo = defaultData.heroVideo || "/video.mp4";
+          }
           return parsed;
         }
       } catch (e) {}
@@ -54,6 +60,12 @@ export async function getDbDataClient(): Promise<DbData> {
 
       if (data && (!data.schedules || data.schedules.length === 0)) {
         data.schedules = defaultData.schedules;
+      }
+      if (data && (!data.gallery || data.gallery.length === 0 || (data.gallery[0] && data.gallery[0].includes('/uploads/')))) {
+        data.gallery = defaultData.gallery;
+      }
+      if (data && (!data.heroVideo || data.heroVideo === "/bg-video.mp4")) {
+        data.heroVideo = defaultData.heroVideo || "/video.mp4";
       }
 
       if (typeof window !== "undefined") {

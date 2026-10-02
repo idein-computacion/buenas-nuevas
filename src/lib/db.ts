@@ -76,6 +76,7 @@ export interface DbData {
   gallery: string[];
   messages?: ContactMessage[];
   liveStream?: LiveStream;
+  heroVideo?: string;
 }
 
 import defaultDataJson from "@/data/db.json";

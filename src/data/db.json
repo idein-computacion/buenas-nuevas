@@ -247,33 +247,21 @@
     ],
     "studies": [],
     "gallery": [
-        "/uploads/1789685777_4d92a938.jpg",
-        "/uploads/1789685807_a2e722be.jpg",
-        "/uploads/1789685826_c4c983c4.jpg",
-        "/uploads/1789685840_7fb20f2e.jpg",
-        "/uploads/1789685858_6d6615d4.jpg",
-        "/uploads/1789685873_936d8285.jpg",
-        "/uploads/1789685888_8e775f4e.jpg",
-        "/uploads/1789685909_84dbda75.jpg",
-        "/uploads/1789685925_83923378.jpg",
-        "/uploads/1789685945_dd833461.jpg",
-        "/uploads/1789685993_282b9245.jpg",
-        "/uploads/1789686011_ddb207a4.jpg",
-        "/uploads/1789686024_beca8f45.jpg",
-        "/uploads/1789686038_37f92937.jpg",
-        "/uploads/1789686058_b9119384.jpg",
-        "/uploads/1789686072_8963ea62.jpg",
-        "/uploads/1789686086_7c12811a.jpg",
-        "/uploads/1789686130_a4a7e75f.jpg",
-        "/uploads/1789686144_f922ae60.jpg",
-        "/uploads/1789686157_9665f587.jpg"
+        "/galeria/comunidad-1.jpg",
+        "/galeria/comunidad-2.jpg",
+        "/galeria/comunidad-3.jpg",
+        "/galeria/comunidad-4.jpg",
+        "/galeria/comunidad-5.jpg",
+        "/galeria/comunidad-6.jpg",
+        "/galeria/pastor-pablo.jpg"
     ],
     "messages": [],
     "liveStream": {
         "active": true,
-        "title": "Culto de Adoración y Palabra en Vivo",
+        "title": "Streaming en Vivo",
         "streamUrl": "https://iptv.ixfo.com.ar:30443/live/BuenasNuevasTv/playlist.m3u8",
-        "description": "Te damos la bienvenida a nuestra reunión dominical. ¡Alabemos y escuchemos la Palabra de Dios juntos desde cualquier lugar!",
+        "description": "Te damos la bienvenida a nuestra transmisión en vivo. ¡Compartí este tiempo con nosotros desde cualquier lugar!",
         "scheduledTime": "Domingos 19:30 hs"
-    }
+    },
+    "heroVideo": "/video.mp4"
 }

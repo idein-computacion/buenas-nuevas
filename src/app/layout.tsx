@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description:
     "Iglesia Evangélica Bautista Buenas Nuevas, Oberá, Misiones. Calle Mensú 1177. No somos una organización religiosa, somos el Pueblo de Dios.",
   icons: {
-    icon: "/logo.jpg",
+    icon: "/logo-white.png",
   },
 };
 

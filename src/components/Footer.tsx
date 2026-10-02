@@ -2,43 +2,44 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="bg-monte-dark border-t border-dorado/15 text-texto/70 pt-16 pb-8">
-      <div className="mx-auto max-w-6xl px-6 grid gap-10 md:grid-cols-4 pb-12 border-b border-white/5">
+    <footer className="bg-slate-900 border-t-4 border-tierra text-slate-300 pt-16 pb-8">
+      <div className="mx-auto max-w-6xl px-6 grid gap-10 md:grid-cols-4 pb-12 border-b border-slate-800">
         {/* Columna Marca */}
         <div className="md:col-span-2">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 rounded-full overflow-hidden border border-dorado/20">
+            <div className="h-10 md:h-12 w-auto flex items-center justify-center shrink-0">
               <img 
-                src="/logo.jpg" 
+                src="/logo-white.png" 
                 alt="Logo Buenas Nuevas" 
-                className="w-full h-full object-cover"
+                className="h-10 md:h-12 w-auto object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]"
               />
             </div>
             <div className="flex flex-col">
-              <span className="font-display text-base font-bold text-texto tracking-tight leading-none">
+              <span className="font-display text-lg font-bold text-white tracking-tight leading-none">
                 Buenas Nuevas
               </span>
-              <span className="text-[9px] text-dorado font-bold uppercase tracking-wider leading-none mt-0.5">
+              <span className="text-[10px] text-sky-400 font-bold uppercase tracking-wider leading-none mt-1">
                 Para Todos
               </span>
             </div>
           </div>
-          <p className="text-sm leading-relaxed text-texto-muted max-w-sm">
+          <p className="text-sm leading-relaxed text-slate-400 max-w-sm">
             Iglesia Evangélica Bautista en el corazón de Oberá. No somos una organización religiosa, somos el Pueblo de Dios con las puertas abiertas para recibirte.
           </p>
         </div>
 
         {/* Columna Ubicación */}
         <div>
-          <p className="text-xs font-bold text-dorado uppercase tracking-[0.15em] mb-4">
+          <p className="text-xs font-bold text-white uppercase tracking-[0.15em] mb-4 flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-tierra"></span>
             Ubicación
           </p>
-          <p className="text-sm text-texto/80 leading-relaxed">
+          <p className="text-sm text-slate-300 leading-relaxed">
             Calle Mensú 1177
             <br />
             Oberá, Misiones, Argentina
             <br />
-            <a href="tel:+543755629896" className="text-texto/60 hover:text-dorado mt-1 block transition-colors">📞 Tel: 3755 629896</a>
+            <a href="tel:+543755629896" className="text-slate-400 hover:text-sky-400 mt-1 block transition-colors">📞 Tel: 3755 629896</a>
           </p>
           <a
             href="https://www.google.com/maps/search/?api=1&query=Mens%C3%BA+1177+Ober%C3%A1+Misiones"
@@ -53,7 +54,8 @@ export default function Footer() {
 
         {/* Columna Contacto */}
         <div>
-          <p className="text-xs font-bold text-dorado uppercase tracking-[0.15em] mb-4">
+          <p className="text-xs font-bold text-white uppercase tracking-[0.15em] mb-4 flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-tierra"></span>
             Contacto & Redes
           </p>
           <div className="flex flex-wrap items-center gap-4">
@@ -104,12 +106,12 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-6xl px-6 pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-texto-muted gap-4">
+      <div className="mx-auto max-w-6xl px-6 pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-4">
         <div>
           © {new Date().getFullYear()} Iglesia Buenas Nuevas · Oberá, Misiones.
         </div>
         <div>
-          Desarrollado por <a href="https://idein.com.ar" className="text-dorado hover:underline" target="_blank" rel="noopener noreferrer">Pedro Turcheñuk - IDeIn Computación - 3754406435</a>
+          Desarrollado por <a href="https://idein.com.ar" className="text-sky-400 hover:underline" target="_blank" rel="noopener noreferrer">Pedro Turcheñuk - IDeIn Computación - 3754406435</a>
         </div>
       </div>
     </footer>

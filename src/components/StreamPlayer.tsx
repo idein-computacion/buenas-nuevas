@@ -17,7 +17,7 @@ declare global {
 
 export default function StreamPlayer({
   url = "https://iptv.ixfo.com.ar:30443/live/ClassicaTvObera/playlist.m3u8",
-  title = "Transmisión en Vivo - Iglesia Buenas Nuevas",
+  title = "Streaming en Vivo",
   className = "",
 }: StreamPlayerProps) {
   const currentUrl = (url || "https://iptv.ixfo.com.ar:30443/live/ClassicaTvObera/playlist.m3u8").trim();
@@ -40,20 +40,28 @@ export default function StreamPlayer({
     let hls: any = null;
     let isCleanedUp = false;
 
+    const safePlay = () => {
+      const p = video.play();
+      if (p !== undefined) {
+        p.catch((err: any) => {
+          if (err?.name === "NotAllowedError") {
+            video.muted = true;
+            video.play().catch(() => {});
+          }
+        });
+      }
+    };
+
+    const handlePlaying = () => {
+      if (!isCleanedUp) {
+        setIsLoading(false);
+      }
+    };
+
+    video.addEventListener("playing", handlePlaying);
+
     const setupPlayer = () => {
       if (isCleanedUp) return;
-
-      const safePlay = () => {
-        const p = video.play();
-        if (p !== undefined) {
-          p.catch((err: any) => {
-            if (err?.name === "NotAllowedError") {
-              video.muted = true;
-              video.play().catch(() => {});
-            }
-          });
-        }
-      };
 
       // 1. Soporte nativo para Safari (iOS y macOS)
       if (video.canPlayType("application/vnd.apple.mpegurl")) {
@@ -69,7 +77,7 @@ export default function StreamPlayer({
         return;
       }
 
-      // 2. Soporte para Chrome, Edge, Firefox, Android mediante Hls.js
+      // 2. Soporte ultra liviano y estable para Chrome, Edge, Firefox, Android mediante Hls.js
       const initHlsInstance = () => {
         if (!window.Hls || !window.Hls.isSupported() || isCleanedUp) {
           setIsLoading(false);
@@ -79,9 +87,25 @@ export default function StreamPlayer({
 
         try {
           hls = new window.Hls({
+            // Habilita web worker para no congelar la UI ni el renderizado
             enableWorker: true,
-            lowLatencyMode: true,
-            backBufferLength: 60,
+            // Desactiva lowLatency agresivo para evitar microcortes por buffer underrun
+            lowLatencyMode: false,
+            // Buffer equilibrado y liviano para conexiones estables y fluidas
+            backBufferLength: 30,
+            maxBufferLength: 30,
+            maxMaxBufferLength: 60,
+            maxBufferSize: 30 * 1000 * 1000,
+            maxBufferHole: 0.5,
+            highBufferWatchdogPeriod: 2,
+            nudgeOffset: 0.1,
+            nudgeMaxRetry: 5,
+            // 3 segmentos de margen para absorver fluctuaciones de internet sin cortes
+            liveSyncDurationCount: 3,
+            liveMaxLatencyDurationCount: 10,
+            fragLoadingTimeOut: 20000,
+            manifestLoadingTimeOut: 20000,
+            levelLoadingTimeOut: 20000,
           });
 
           hls.loadSource(currentUrl);
@@ -124,7 +148,6 @@ export default function StreamPlayer({
       if (window.Hls) {
         initHlsInstance();
       } else {
-        // Cargar script de HLS.js local con fallback a CDN
         const script = document.createElement("script");
         script.src = "/hls.min.js";
         script.async = true;
@@ -152,6 +175,7 @@ export default function StreamPlayer({
 
     return () => {
       isCleanedUp = true;
+      video.removeEventListener("playing", handlePlaying);
       if (hls) {
         hls.destroy();
       }
@@ -166,7 +190,7 @@ export default function StreamPlayer({
   if (isYouTube) {
     const embedUrl = getYouTubeEmbedUrl(currentUrl);
     return (
-      <div className={`relative w-full aspect-video rounded-2xl overflow-hidden shadow-2xl bg-black border border-white/10 ${className}`}>
+      <div className={`relative w-full aspect-video rounded-xl overflow-hidden bg-black ${className}`}>
         <iframe
           src={embedUrl}
           title={title}
@@ -179,35 +203,40 @@ export default function StreamPlayer({
     );
   }
 
-  // Si es una transmisión HLS / M3U8 (IPTV)
+  // Si es una transmisión HLS / M3U8 (IPTV o streaming directo)
   if (isM3u8) {
     return (
-      <div className={`relative w-full aspect-video rounded-2xl overflow-hidden shadow-2xl bg-black border border-white/10 flex items-center justify-center ${className}`}>
+      <div className={`relative w-full aspect-video rounded-xl overflow-hidden bg-black flex items-center justify-center ${className}`}>
         <video
           ref={videoRef}
           controls
           autoPlay
           playsInline
+          preload="auto"
           title={title}
           className="w-full h-full object-contain bg-black"
+          style={{
+            transform: "translateZ(0)",
+            willChange: "transform",
+          }}
         />
 
-        {/* Spinner de carga */}
+        {/* Spinner de carga ultra liviano (sin backdrop-blur ni efectos pesados) */}
         {isLoading && !hasError && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm pointer-events-none gap-3">
-            <div className="w-10 h-10 border-4 border-dorado/30 border-t-dorado rounded-full animate-spin" />
-            <p className="text-xs text-white/80 font-medium">Conectando con la señal en vivo...</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/75 pointer-events-none gap-2 z-10">
+            <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+            <p className="text-xs text-white/80 font-medium">Cargando streaming...</p>
           </div>
         )}
 
         {/* Mensaje de error / fuera de línea */}
         {hasError && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/85 p-6 text-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center text-xl font-bold">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90 p-6 text-center gap-3 z-10">
+            <div className="w-10 h-10 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center text-lg font-bold">
               ✕
             </div>
             <p className="text-sm font-semibold text-white">Transmisión fuera de línea</p>
-            <p className="text-xs text-texto-muted max-w-md">
+            <p className="text-xs text-slate-400 max-w-md">
               La señal en vivo no está emitiendo en este momento o el servidor de streaming está en reposo.
             </p>
             <button
@@ -221,7 +250,7 @@ export default function StreamPlayer({
                   v.load();
                 }
               }}
-              className="mt-2 bg-white/10 hover:bg-white/20 text-white text-xs px-4 py-2 rounded-lg transition-colors"
+              className="mt-2 bg-white/10 hover:bg-white/20 text-white text-xs px-4 py-2 rounded-lg transition-colors cursor-pointer"
             >
               Reintentar conexión
             </button>
@@ -233,7 +262,7 @@ export default function StreamPlayer({
 
   // Cualquier otro reproductor embebido (SelvaPlay, Facebook, etc.)
   return (
-    <div className={`w-full rounded-2xl overflow-hidden shadow-2xl bg-black border border-white/10 flex justify-center ${className}`}>
+    <div className={`w-full rounded-xl overflow-hidden bg-black flex justify-center ${className}`}>
       <iframe
         src={currentUrl}
         width="100%"
