@@ -1,7 +1,7 @@
 {
     "verse": {
-        "text": "Tomen el casco de la salvación y la espada del Espíritu, que es la palabra de Dios\n",
-        "reference": "Efesios 6:17"
+        "text": "Amados hermanos, les ruego por la autoridad de nuestro Señor Jesucristo que vivan en armonía los unos con los otros. Que no haya divisiones en la iglesia. Por el contrario, sean todos de un mismo parecer, unidos en pensamiento y propósito",
+        "reference": "1 Corintios 1:10"
     },
     "schedules": [
         {
@@ -63,166 +63,103 @@
     ],
     "events": [
         {
-            "title": "Proyección del Episodio 1 de la Temporada 6 \"The Chosen\"",
-            "date": "2026-10-03",
-            "time": "20 hs.",
-            "description": "¡MÍRALO PRIMERO!\nEl miedo y la confusión se apoderan de los discípulos , mientras intentan comprender el arresto de Jesús y\nla traición de Judas. Mientras luchan por permanecer unidos, Nicodemo se enfrenta solo al Sumo Sacerdote en una fuerte confrontación que sume al consejo en el caos.\n\nÚnete a nosotros en esta experiencia especial de acceso anticipado para ver \"el Episodio 1 de la Temporada 6 de The Chosen\".\n",
-            "category": "Comunidad",
-            "imageUrl": "/uploads/1790436483_5e9a4f3a.png",
-            "id": "1790436491059"
-        },
-        {
-            "title": "Instituto de Capacitación L.E.F.",
-            "date": "2026-10-04",
-            "time": "10 hs.",
-            "description": "Tendremos el último encuentro 2026 de Nuestro Instituto de Capacitación en Liderazgo. En el Edificio Fundacional",
-            "category": "Estudio",
-            "imageUrl": "",
-            "id": "1790459872945"
-        },
-        {
             "title": "Cena del Señor",
-            "date": "2026-10-04",
-            "time": "19:30 hs.",
-            "description": "Celebramos juntos la Cena del Señor en nuestro Culto Principal de las 19:30 hs.",
+            "date": "2026-11-01",
+            "time": "19:30 hs",
+            "description": "Celebración a Dios en nuestro Auditorio Central en El Mensú 1177",
             "category": "Comunidad",
-            "imageUrl": "",
-            "id": "1790459922978"
+            "imageUrl": "/uploads/1793794695_a63a2b7b.jpg",
+            "id": "1793705781014"
         },
         {
-            "title": "Encuentro Especial de Intercesión",
-            "date": "2026-10-08",
-            "time": "18 hs.",
-            "description": "En nuestro Edificio Fundacional",
+            "title": "Actividad de Jóvenes Grupos de Discipulado (G.P.)",
+            "date": "2026-11-07",
+            "time": "20 hs.",
+            "description": "En nuestro Auditorio Principal. El Mensú 1177",
             "category": "Comunidad",
-            "imageUrl": "",
-            "id": "1790713260291"
+            "imageUrl": "/uploads/1793794739_24e2954f.jpg",
+            "id": "1793706085312"
         },
         {
-            "title": "Feria Americana en el C.A.M.",
-            "date": "2026-10-10",
-            "time": "9 hs.",
-            "description": "Ministerio \"Manos abiertas\" realiza la Feria Americana con el doble propósito de bendecir a las personas con el acceso a comprar prendas a muy bajo costo y con lo recaudado se reutiliza para bendecir a gente necesitada a través del área de \"Acción Social\".",
-            "category": "Social",
-            "imageUrl": "",
-            "id": "1790713522942"
-        },
-        {
-            "title": "Charla de Prevensión y Concientización sobre el Cáncer de mama (Lalcec)",
-            "date": "2026-10-15",
-            "time": "19 hs.",
-            "description": "En nuestro Auditorio Principal de calle El Mensú 1177",
-            "category": "Social",
-            "imageUrl": "",
-            "id": "1790713671626"
-        },
-        {
-            "title": "Actividad Juvenil en el Camping de la Iglesia",
-            "date": "2026-10-17",
-            "time": "15:30 hs.",
-            "description": "Encuentro especial del Ministerio Juvenil en el Camping de la Iglesia.",
+            "title": "Actividad Juvenil Reunión",
+            "date": "2026-11-14",
+            "time": "18 hs 20 hs",
+            "description": "Los Adolescentes 18 hs. en el Edificio Fundacional.  Los Jóvenes 20 hs. en el Auditorio Principal.",
             "category": "Comunidad",
-            "imageUrl": "",
-            "id": "1790714546510"
+            "imageUrl": "/uploads/1793794757_3d8ca2d3.jpg",
+            "id": "1793706319862"
         },
         {
-            "title": "Primeros Pasos - Curso de Discipulado 1",
-            "date": "2026-10-18",
-            "time": "10 hs.",
-            "description": "En las instalaciones del Edificio Fundacional. Rincón y Reconquista.",
-            "category": "Estudio",
-            "imageUrl": "",
-            "id": "1790714669284"
-        },
-        {
-            "title": "Festejamos el Día de la Madre",
-            "date": "2026-10-18",
-            "time": "19:30 hs.",
-            "description": "En el Auditorio Principal. El Mensú 1177",
-            "category": "Comunidad",
-            "imageUrl": "",
-            "id": "1790714710132"
-        },
-        {
-            "title": "En Voz Alta (Streaming)",
-            "date": "2026-10-20",
+            "title": "En Voz Alta ",
+            "date": "2026-11-19",
             "time": "21 hs.",
-            "description": "Tendremos nuestro Segundo Programa en Vivo que podés seguir desde nuestra página web iglesiabuenasnuevas.com.ar . Será un programa especial sobre \"porque no celebramos el Halloween\" y en su lugar celebramos la Fiesta de la Luz.",
+            "description": "Programa especial emitido por streaming en nuestro canal de Youtube. ",
             "category": "Social",
-            "imageUrl": "",
-            "id": "1790714892104"
+            "imageUrl": "/uploads/1793794773_49eddebf.jpg",
+            "id": "1793716709398"
         },
         {
-            "title": "Entrenamiento en Evangelismo Urbano - Comisionados",
-            "date": "2026-10-22",
+            "title": "Charla preparación para Bautismos",
+            "date": "2026-11-21",
+            "time": "18 hs.",
+            "description": "En el Edificio Fundacional. Rincón y Reconquista",
+            "category": "Comunidad",
+            "imageUrl": "/uploads/1793794798_11ff1187.png",
+            "id": "1793716824875"
+        },
+        {
+            "title": "Actividad de Jóvenes Grupos de Discipulado (G.P.)",
+            "date": "2026-11-21",
             "time": "20 hs.",
-            "description": "El lugar será a Confirmar. Tendremos un tiempo especial de unidad con las Iglesias de la Ciudad y el Ministerio de Comisionados.",
+            "description": "En nuestro Auditorio Principal. El Mensú 1177",
             "category": "Comunidad",
-            "imageUrl": "",
-            "id": "1790714968487"
+            "imageUrl": "/uploads/1793794827_2eb6cd2b.jpg",
+            "id": "1793716902754"
         },
         {
-            "title": "Entrenamiento en Evangelismo Urbano - Comisionados",
-            "date": "2026-10-23",
-            "time": "9 hs.",
-            "description": "Encuentro de Pastores y Líderes con el Equipo de Comisionados (lugar a Confirmar)",
+            "title": "Reunión de Ministerios",
+            "date": "2026-11-22",
+            "time": "9:30 hs.",
+            "description": "Encuentro de todos los ministeriores, referentes y colaboradores en las distintas áreas ministeriales de la Iglesia. Nos reunimos en el Edificio Fundacional. Rincón y Reconquista.",
             "category": "Comunidad",
-            "imageUrl": "",
-            "id": "1790715027877"
+            "imageUrl": "/uploads/1793794840_ccd0d8b2.jpg",
+            "id": "1793717048524"
         },
         {
-            "title": "Entrenamiento en Evangelismo Urbano - Comisionados",
-            "date": "2026-10-23",
-            "time": "20 hs.",
-            "description": "Talleres de Capacitación del Ministerio Comisionados. (lugar a Confirmar)",
+            "title": "Actividad Juvenil en el Camping",
+            "date": "2026-11-28",
+            "time": "15:30 hs.",
+            "description": "Compartirmos una tarde/noche de pileta, juegos, recreación y tiempo especial con el Señor en nuestro Camping en los Helechos. ",
             "category": "Comunidad",
-            "imageUrl": "",
-            "id": "1790715082158"
+            "imageUrl": "/uploads/1793794864_bc2d73d7.jpg",
+            "id": "1793717194847"
         },
         {
-            "title": "Entrenamiento en Evangelismo Urbano - Comisionados",
-            "date": "2026-10-24",
-            "time": "16 hs.",
-            "description": "Evangelismo Urbano",
+            "title": "Cierre de Actividades de Pequeños Exploradores",
+            "date": "2026-11-28",
+            "time": "9:30 hs.",
+            "description": "Actividad que desarrollamos todos los sábados en el C.A.M. Lavalle 1660",
             "category": "Comunidad",
-            "imageUrl": "",
-            "id": "1790715531747"
+            "imageUrl": "/uploads/1793794879_23b9b34b.jpg",
+            "id": "1793741190358"
         },
         {
-            "title": "\"Noche de Milagros\"",
-            "date": "2026-10-24",
-            "time": "20 hs.",
-            "description": "Noche de Evangelismo y Milagros en la Plaza San Martín con todas las Iglesias de Oberá.",
-            "category": "Comunidad",
-            "imageUrl": "",
-            "id": "1790715578603"
-        },
-        {
-            "title": "Primeros Pasos - Curso de Discipulado 2",
-            "date": "2026-10-25",
+            "title": "Fiesta de Bautismos",
+            "date": "2026-11-29",
             "time": "10 hs.",
-            "description": "En las instalaciones del Edificio Fundacional. Rincón y Reconquista.",
+            "description": "En nuestro Camping en los Helechos.",
             "category": "Comunidad",
-            "imageUrl": "",
-            "id": "1790715629567"
+            "imageUrl": "/uploads/1793794892_c85a4d9d.jpg",
+            "id": "1793741299459"
         },
         {
-            "title": "Actividad Especial en el Hogar de Día",
-            "date": "2026-09-29",
+            "title": "Feria de Ropa y Calzado",
+            "date": "2026-11-07",
             "time": "9 hs.",
-            "description": "Tendemos una actividad especial para los adolescentes del Hogar de Día. Estemos orando por quienes estarán llevando el mensaje de las Buenas Nuevas todos los adolescentes del Hogar.\n",
+            "description": "En el CAM Lavalle 1660. ¡Te esperamos!",
             "category": "Social",
             "imageUrl": "",
-            "id": "1790715688696"
-        },
-        {
-            "title": "Fiesta de la Luz \"Octubrillante en la Ciudad de Oberá\"",
-            "date": "2026-10-31",
-            "time": "19 hs.",
-            "description": "Gran Fiesta de Celebración al Señor en el Centro de la Ciudad, en unidad con todas las Iglesias de Oberá.",
-            "category": "Comunidad",
-            "imageUrl": "",
-            "id": "1790715729030"
+            "id": "1793805339763"
         }
     ],
     "sermons": [
@@ -233,6 +170,22 @@
             "videoUrl": "https://www.youtube.com/watch?v=gqzpSQIFp8w&rco=1",
             "duration": "1 hora 12 min",
             "id": "1790435337284"
+        },
+        {
+            "title": "Primer Taller de Evangelismo Personal - Ministerio Comisionados",
+            "preacher": "Pastor Pablo Garay",
+            "date": "2026-10-23",
+            "videoUrl": "https://youtu.be/GmWl9xaYgJI?si=X5KjmS43d16w0Tfa",
+            "duration": "1 hs. 35 min.",
+            "id": "1793796510225"
+        },
+        {
+            "title": "Segundo Taller de Evangelismo Personal - Ministerio Comisionados",
+            "preacher": "Pastor Pablo Garay",
+            "date": "2026-10-24",
+            "videoUrl": "https://www.youtube.com/live/VQdcgI2oeQg?si=hrAPesbKDRsH3cGo",
+            "duration": "2 hs. 15 min.",
+            "id": "1793796610210"
         }
     ],
     "podcasts": [
@@ -247,20 +200,49 @@
     ],
     "studies": [],
     "gallery": [
-        "/galeria/comunidad-1.jpg",
-        "/galeria/comunidad-2.jpg",
-        "/galeria/comunidad-3.jpg",
-        "/galeria/comunidad-4.jpg",
-        "/galeria/comunidad-5.jpg",
-        "/galeria/comunidad-6.jpg",
-        "/galeria/pastor-pablo.jpg"
+        "/uploads/1789685777_4d92a938.jpg",
+        "/uploads/1789685807_a2e722be.jpg",
+        "/uploads/1789685826_c4c983c4.jpg",
+        "/uploads/1789685840_7fb20f2e.jpg",
+        "/uploads/1789685858_6d6615d4.jpg",
+        "/uploads/1789685873_936d8285.jpg",
+        "/uploads/1789685888_8e775f4e.jpg",
+        "/uploads/1789685909_84dbda75.jpg",
+        "/uploads/1789685925_83923378.jpg",
+        "/uploads/1789685945_dd833461.jpg",
+        "/uploads/1789685993_282b9245.jpg",
+        "/uploads/1789686011_ddb207a4.jpg",
+        "/uploads/1789686024_beca8f45.jpg",
+        "/uploads/1789686038_37f92937.jpg",
+        "/uploads/1789686058_b9119384.jpg",
+        "/uploads/1789686072_8963ea62.jpg",
+        "/uploads/1789686086_7c12811a.jpg",
+        "/uploads/1789686130_a4a7e75f.jpg",
+        "/uploads/1789686144_f922ae60.jpg",
+        "/uploads/1789686157_9665f587.jpg",
+        "/uploads/1790991831_c8dd98c7.jpeg",
+        "/uploads/1790991842_3e98f01f.jpeg",
+        "/uploads/1790991855_5525e05f.jpeg",
+        "/uploads/1790991873_ad6f2561.jpeg",
+        "/uploads/1790991895_f9c618d7.jpeg",
+        "/uploads/1790991910_5480bede.jpeg",
+        "/uploads/1790991927_548bd450.jpeg",
+        "/uploads/1790991941_d1132db7.jpeg",
+        "/uploads/1790991957_858a66a0.jpeg",
+        "/uploads/1790991973_907e1382.jpeg",
+        "/uploads/1790991994_8f042a07.jpeg",
+        "/uploads/1790992009_125beeae.jpeg",
+        "/uploads/1790992027_499b408c.jpeg",
+        "/uploads/1790992042_e72a5e14.jpeg",
+        "/uploads/1790992058_96308778.jpeg",
+        "/uploads/1790992071_c56c5772.jpeg",
+        "/uploads/1790992086_d7f2d54e.jpeg"
     ],
-    "messages": [],
     "liveStream": {
         "active": true,
-        "title": "Streaming en Vivo",
+        "title": "Culto de Adoración y Palabra en Vivo",
         "streamUrl": "https://iptv.ixfo.com.ar:30443/live/BuenasNuevasTv/playlist.m3u8",
-        "description": "Te damos la bienvenida a nuestra transmisión en vivo. ¡Compartí este tiempo con nosotros desde cualquier lugar!",
+        "description": "Te damos la bienvenida a nuestra reunión dominical. ¡Alabemos y escuchemos la Palabra de Dios juntos desde cualquier lugar!",
         "scheduledTime": "Domingos 19:30 hs"
     },
     "heroVideo": "/video.mp4"

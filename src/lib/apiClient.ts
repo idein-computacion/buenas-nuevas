@@ -1,7 +1,84 @@
-import { DbData, defaultDbData } from './db';
+import { DbData, VisitStats, defaultDbData } from './db';
 
 const API_URL = "/api.php";
 const defaultData: DbData = defaultDbData;
+
+export function getLocalVisitStats(): VisitStats {
+  const todayKey = new Date().toISOString().split("T")[0];
+  const fallback: VisitStats = {
+    totalVisits: 0,
+    uniqueVisitors: 0,
+    daily: {},
+    lastUpdated: new Date().toISOString(),
+  };
+  if (typeof window === "undefined") return fallback;
+  try {
+    const raw = localStorage.getItem("bn_visit_stats");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") {
+        return {
+          totalVisits: Number(parsed.totalVisits) || 0,
+          uniqueVisitors: Number(parsed.uniqueVisitors) || 0,
+          daily: parsed.daily && typeof parsed.daily === "object" ? parsed.daily : {},
+          lastUpdated: parsed.lastUpdated || new Date().toISOString(),
+        };
+      }
+    }
+  } catch (e) {}
+  return fallback;
+}
+
+export async function recordPageVisitClient(): Promise<void> {
+  if (typeof window === "undefined") return;
+  try {
+    // Evitar duplicar visitas al recargar dentro de la misma sesión
+    if (sessionStorage.getItem("bn_session_visited") === "1") {
+      return;
+    }
+    sessionStorage.setItem("bn_session_visited", "1");
+
+    const isNewUnique = localStorage.getItem("bn_unique_visitor") !== "1";
+    if (isNewUnique) {
+      localStorage.setItem("bn_unique_visitor", "1");
+    }
+
+    const todayKey = new Date().toISOString().split("T")[0];
+    const stats = getLocalVisitStats();
+    stats.totalVisits += 1;
+    if (isNewUnique || stats.uniqueVisitors === 0) {
+      stats.uniqueVisitors += 1;
+    }
+    stats.daily[todayKey] = (stats.daily[todayKey] || 0) + 1;
+    stats.lastUpdated = new Date().toISOString();
+    localStorage.setItem("bn_visit_stats", JSON.stringify(stats));
+
+    // Sincronizar también con bn_db_cache si existe
+    const cached = localStorage.getItem("bn_db_cache");
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        if (parsed && typeof parsed === "object") {
+          parsed.visitStats = stats;
+          localStorage.setItem("bn_db_cache", JSON.stringify(parsed));
+          sessionStorage.setItem("bn_db_cache", JSON.stringify(parsed));
+        }
+      } catch (e) {}
+    }
+
+    // Enviar al backend PHP en producción
+    const res = await fetch(`${API_URL}?visit=1&unique=${isNewUnique ? "1" : "0"}&_t=${Date.now()}`);
+    if (res.ok) {
+      const text = await res.text();
+      if (!text.startsWith("<?php")) {
+        const json = JSON.parse(text);
+        if (json?.visitStats) {
+          localStorage.setItem("bn_visit_stats", JSON.stringify(json.visitStats));
+        }
+      }
+    }
+  } catch (e) {}
+}
 
 export function getCachedDbData(): DbData {
   if (typeof window !== "undefined") {
@@ -13,8 +90,10 @@ export function getCachedDbData(): DbData {
           if (!parsed.schedules || parsed.schedules.length === 0) {
             parsed.schedules = defaultData.schedules;
           }
-          if (!parsed.gallery || parsed.gallery.length === 0 || (parsed.gallery[0] && parsed.gallery[0].includes('/uploads/'))) {
-            parsed.gallery = defaultData.gallery;
+          if (parsed.gallery && Array.isArray(parsed.gallery)) {
+            parsed.gallery = parsed.gallery.filter((url: string) => !url.includes('/galeria/comunidad-') && !url.includes('/galeria/pastor-pablo.jpg'));
+          } else {
+            parsed.gallery = [];
           }
           if (!parsed.heroVideo || parsed.heroVideo === "/bg-video.mp4") {
             parsed.heroVideo = defaultData.heroVideo || "/video.mp4";
@@ -61,8 +140,10 @@ export async function getDbDataClient(): Promise<DbData> {
       if (data && (!data.schedules || data.schedules.length === 0)) {
         data.schedules = defaultData.schedules;
       }
-      if (data && (!data.gallery || data.gallery.length === 0 || (data.gallery[0] && data.gallery[0].includes('/uploads/')))) {
-        data.gallery = defaultData.gallery;
+      if (data && Array.isArray(data.gallery)) {
+        data.gallery = data.gallery.filter((url: string) => !url.includes('/galeria/comunidad-') && !url.includes('/galeria/pastor-pablo.jpg'));
+      } else if (data) {
+        data.gallery = [];
       }
       if (data && (!data.heroVideo || data.heroVideo === "/bg-video.mp4")) {
         data.heroVideo = defaultData.heroVideo || "/video.mp4";

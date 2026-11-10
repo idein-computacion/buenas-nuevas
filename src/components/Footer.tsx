@@ -39,7 +39,7 @@ export default function Footer() {
             <br />
             Oberá, Misiones, Argentina
             <br />
-            <a href="tel:+543755629896" className="text-slate-400 hover:text-sky-400 mt-1 block transition-colors">📞 Tel: 3755 629896</a>
+            <a href="tel:+543755629698" className="text-slate-400 hover:text-sky-400 mt-1 block transition-colors">📞 Tel: 3755 629698</a>
           </p>
           <a
             href="https://www.google.com/maps/search/?api=1&query=Mens%C3%BA+1177+Ober%C3%A1+Misiones"
@@ -78,7 +78,7 @@ export default function Footer() {
               <img src="/social-ig.png" alt="Instagram" className="w-full h-full object-contain" />
             </a>
             <a
-              href="https://wa.me/5493755629896"
+              href="https://wa.me/5493755629698"
               target="_blank"
               rel="noopener noreferrer"
               className="w-10 h-10 flex items-center justify-center transition-all hover:scale-110 p-0.5"

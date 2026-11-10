@@ -21,15 +21,36 @@ export default function StreamPlayer({
   className = "",
 }: StreamPlayerProps) {
   const currentUrl = (url || "https://iptv.ixfo.com.ar:30443/live/ClassicaTvObera/playlist.m3u8").trim();
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isInView, setIsInView] = useState(false);
 
   const isM3u8 = currentUrl.includes(".m3u8");
   const isYouTube = currentUrl.includes("youtube.com") || currentUrl.includes("youtu.be");
 
   useEffect(() => {
-    if (!isM3u8) return;
+    const el = containerRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setIsInView(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setIsInView(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "300px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!isM3u8 || !isInView) return;
 
     setHasError(false);
     setIsLoading(true);
@@ -184,16 +205,17 @@ export default function StreamPlayer({
         video.load();
       }
     };
-  }, [currentUrl, isM3u8]);
+  }, [currentUrl, isM3u8, isInView]);
 
   // Si es un video o directo de YouTube
   if (isYouTube) {
     const embedUrl = getYouTubeEmbedUrl(currentUrl);
     return (
-      <div className={`relative w-full aspect-video rounded-xl overflow-hidden bg-black ${className}`}>
+      <div ref={containerRef} className={`relative w-full aspect-video rounded-xl overflow-hidden bg-black ${className}`}>
         <iframe
           src={embedUrl}
           title={title}
+          loading="lazy"
           className="absolute inset-0 w-full h-full border-0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
           allowFullScreen
@@ -206,13 +228,13 @@ export default function StreamPlayer({
   // Si es una transmisión HLS / M3U8 (IPTV o streaming directo)
   if (isM3u8) {
     return (
-      <div className={`relative w-full aspect-video rounded-xl overflow-hidden bg-black flex items-center justify-center ${className}`}>
+      <div ref={containerRef} className={`relative w-full aspect-video rounded-xl overflow-hidden bg-black flex items-center justify-center ${className}`}>
         <video
           ref={videoRef}
           controls
           autoPlay
           playsInline
-          preload="auto"
+          preload="none"
           title={title}
           className="w-full h-full object-contain bg-black"
           style={{

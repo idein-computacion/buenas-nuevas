@@ -66,6 +66,13 @@ export interface ScheduleItem {
   desc: string;
 }
 
+export interface VisitStats {
+  totalVisits: number;
+  uniqueVisitors: number;
+  daily: Record<string, number>;
+  lastUpdated?: string;
+}
+
 export interface DbData {
   verse: Verse;
   schedules?: ScheduleItem[];
@@ -77,6 +84,7 @@ export interface DbData {
   messages?: ContactMessage[];
   liveStream?: LiveStream;
   heroVideo?: string;
+  visitStats?: VisitStats;
 }
 
 import defaultDataJson from "@/data/db.json";

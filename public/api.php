@@ -16,6 +16,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
+// -------------------------------------------------------------
+// MINIATURAS Y OPTIMIZACIÓN DE IMÁGENES EN CACHÉ (?thumb=/uploads/...&w=240)
+// -------------------------------------------------------------
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['thumb'])) {
+    $rel = $_GET['thumb'];
+    $w = isset($_GET['w']) ? max(64, min(1600, (int)$_GET['w'])) : 240;
+
+    // Validar que sea un archivo dentro de /uploads/
+    $clean_name = basename($rel);
+    $src_path = __DIR__ . '/uploads/' . $clean_name;
+
+    if (!file_exists($src_path) || !is_file($src_path)) {
+        header('Location: ' . $rel, true, 302);
+        exit;
+    }
+
+    $thumbs_dir = __DIR__ . '/uploads/thumbs';
+    if (!is_dir($thumbs_dir)) {
+        @mkdir($thumbs_dir, 0755, true);
+    }
+
+    $thumb_file = $thumbs_dir . '/' . $w . '_' . pathinfo($clean_name, PATHINFO_FILENAME) . '.jpg';
+
+    if (!file_exists($thumb_file) && function_exists('imagecreatefromstring')) {
+        $raw = @file_get_contents($src_path);
+        $img = $raw ? @imagecreatefromstring($raw) : false;
+        if ($img) {
+            $orig_w = imagesx($img);
+            $orig_h = imagesy($img);
+            if ($orig_w > $w) {
+                $new_w = $w;
+                $new_h = max(1, (int)round($orig_h * ($w / $orig_w)));
+            } else {
+                $new_w = $orig_w;
+                $new_h = $orig_h;
+            }
+            $dst = imagecreatetruecolor($new_w, $new_h);
+            $white = imagecolorallocate($dst, 255, 255, 255);
+            imagefill($dst, 0, 0, $white);
+            imagecopyresampled($dst, $img, 0, 0, 0, 0, $new_w, $new_h, $orig_w, $orig_h);
+            $quality = ($w <= 300) ? 78 : 82;
+            @imagejpeg($dst, $thumb_file, $quality);
+            imagedestroy($dst);
+            imagedestroy($img);
+        }
+    }
+
+    if (file_exists($thumb_file)) {
+        header('Content-Type: image/jpeg');
+        header('Cache-Control: public, max-age=31536000, immutable');
+        header('Content-Length: ' . filesize($thumb_file));
+        readfile($thumb_file);
+        exit;
+    }
+
+    header('Location: ' . $rel, true, 302);
+    exit;
+}
+
 header('Content-Type: application/json; charset=utf-8');
 
 $db_file = __DIR__ . '/db.json';
@@ -64,6 +123,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     if (!is_array($json)) {
         $json = [];
+    }
+
+    if (!isset($json['visitStats']) || !is_array($json['visitStats'])) {
+        $json['visitStats'] = [
+            "totalVisits" => 0,
+            "uniqueVisitors" => 0,
+            "daily" => [],
+            "lastUpdated" => date('c')
+        ];
+    }
+
+    // Registrar visita si viene ?visit=1
+    if (isset($_GET['visit']) && $_GET['visit'] === '1') {
+        $today_key = date('Y-m-d');
+        $json['visitStats']['totalVisits'] = (int)($json['visitStats']['totalVisits'] ?? 0) + 1;
+        if (isset($_GET['unique']) && $_GET['unique'] === '1') {
+            $json['visitStats']['uniqueVisitors'] = (int)($json['visitStats']['uniqueVisitors'] ?? 0) + 1;
+        } elseif ((int)$json['visitStats']['uniqueVisitors'] === 0) {
+            $json['visitStats']['uniqueVisitors'] = 1;
+        }
+        if (!isset($json['visitStats']['daily']) || !is_array($json['visitStats']['daily'])) {
+            $json['visitStats']['daily'] = [];
+        }
+        $json['visitStats']['daily'][$today_key] = (int)($json['visitStats']['daily'][$today_key] ?? 0) + 1;
+
+        // Mantener últimos 90 días para que db.json sea siempre liviano
+        ksort($json['visitStats']['daily']);
+        if (count($json['visitStats']['daily']) > 90) {
+            $json['visitStats']['daily'] = array_slice($json['visitStats']['daily'], -90, 90, true);
+        }
+
+        $json['visitStats']['lastUpdated'] = date('c');
+        @file_put_contents($db_file, json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        echo json_encode(["success" => true, "visitStats" => $json['visitStats']], JSON_UNESCAPED_UNICODE);
+        exit;
     }
 
     // Asegurar horarios si vinieran vacíos
@@ -148,6 +242,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'update_all') {
         $new_db = json_decode($data_payload, true);
         if (json_last_error() === JSON_ERROR_NONE && is_array($new_db)) {
+            if (!isset($new_db['visitStats']) && isset($current_db['visitStats'])) {
+                $new_db['visitStats'] = $current_db['visitStats'];
+            }
             $written = file_put_contents($db_file, json_encode($new_db, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
             if ($written !== false) {
                 echo json_encode(["success" => true]);

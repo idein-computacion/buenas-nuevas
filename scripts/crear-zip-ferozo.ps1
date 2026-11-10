@@ -40,9 +40,15 @@ if (Test-Path $publicDir) {
     }
 }
 
-# 5. Limpiar cualquier archivo __next* o *.txt residual de compilación en todo el árbol
+# 5. Limpiar cualquier archivo __next* o *.txt residual de compilación y videos duplicados no usados
 Get-ChildItem -Path $stagingDir -Recurse -Filter "__next*" -Force -ErrorAction SilentlyContinue | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
 Get-ChildItem -Path $stagingDir -Recurse -Filter "*.txt" -Force -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
+foreach ($unused in @("video - Trim.mp4", "bg-video.mp4", "uploads\1790900809118_8fidk19.mp4")) {
+    $unusedPath = Join-Path $stagingDir $unused
+    if (Test-Path $unusedPath) {
+        Remove-Item -Force $unusedPath -ErrorAction SilentlyContinue
+    }
+}
 
 # 6. Asegurar carpeta uploads dentro del staging para Ferozo
 $stagingUploads = Join-Path $stagingDir "uploads"
@@ -55,10 +61,20 @@ if (Test-Path $zipPath) {
     Remove-Item -Force $zipPath
 }
 
-# 7. Comprimir paquete .zip
+# 7. Comprimir paquete .zip (con barras '/' compatibles con Linux/Apache)
 Write-Host "Comprimiendo archivo zip de producción..."
+Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
-[System.IO.Compression.ZipFile]::CreateFromDirectory($stagingDir, $zipPath, [System.IO.Compression.CompressionLevel]::Optimal, $false)
+$zipArchive = [System.IO.Compression.ZipFile]::Open($zipPath, [System.IO.Compression.ZipArchiveMode]::Create)
+try {
+    $allFiles = Get-ChildItem -Path $stagingDir -Recurse -File -Force
+    foreach ($f in $allFiles) {
+        $relPath = $f.FullName.Substring($stagingDir.Length).TrimStart('\', '/').Replace('\', '/')
+        [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zipArchive, $f.FullName, $relPath, [System.IO.Compression.CompressionLevel]::Optimal) | Out-Null
+    }
+} finally {
+    $zipArchive.Dispose()
+}
 
 # 8. Limpiar carpeta temporal
 Remove-Item -Recurse -Force $stagingDir

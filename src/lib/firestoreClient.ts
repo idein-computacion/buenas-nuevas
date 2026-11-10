@@ -1,4 +1,5 @@
-import { DbData, ScheduleItem, defaultDbData } from "./db";
+import { DbData, ScheduleItem, VisitStats, defaultDbData } from "./db";
+import { getLocalVisitStats } from "./apiClient";
 
 // Ferozo PHP Backend Client (Reemplaza a Firestore)
 // Usa FormData para saltar los bloqueos de seguridad del WAF de Ferozo.
@@ -9,6 +10,7 @@ const defaultData = defaultDbData;
 
 export function getCachedDbData(): DbData | null {
   if (typeof window !== "undefined") {
+    const localStats = getLocalVisitStats();
     const cached = localStorage.getItem("bn_db_cache") || sessionStorage.getItem("bn_db_cache");
     if (cached) {
       try {
@@ -20,10 +22,14 @@ export function getCachedDbData(): DbData | null {
           if (!parsed.heroVideo || parsed.heroVideo === "/bg-video.mp4") {
             parsed.heroVideo = defaultData.heroVideo || "/video.mp4";
           }
+          if (!parsed.visitStats || (localStats.totalVisits > (parsed.visitStats.totalVisits || 0))) {
+            parsed.visitStats = localStats;
+          }
           return parsed;
         }
       } catch (e) {}
     }
+    return { ...defaultData, visitStats: localStats };
   }
   return defaultData;
 }
@@ -67,6 +73,12 @@ export async function getDbDataClient(): Promise<DbData | null> {
       }
 
       if (typeof window !== "undefined" && data) {
+        const localStats = getLocalVisitStats();
+        if (!data.visitStats || (text.startsWith("<?php") && localStats.totalVisits > 0)) {
+          data.visitStats = localStats;
+        } else if (data.visitStats) {
+          localStorage.setItem("bn_visit_stats", JSON.stringify(data.visitStats));
+        }
         localStorage.setItem("bn_db_cache", JSON.stringify(data));
         sessionStorage.setItem("bn_db_cache", JSON.stringify(data));
       }
@@ -225,6 +237,16 @@ export async function deleteMessageClient(id: string): Promise<boolean> {
   if (!db) return false;
   if (db.messages) {
     db.messages = db.messages.filter(m => m.id !== id);
+  }
+  return saveWholeDb(db);
+}
+
+export async function updateVisitStatsClient(visitStats: VisitStats): Promise<boolean> {
+  const db = await getDbDataClient();
+  if (!db) return false;
+  db.visitStats = visitStats;
+  if (typeof window !== "undefined") {
+    localStorage.setItem("bn_visit_stats", JSON.stringify(visitStats));
   }
   return saveWholeDb(db);
 }

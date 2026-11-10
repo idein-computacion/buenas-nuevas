@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import FileUpload from "@/components/FileUpload";
-import { DbData, EventItem, Sermon, Podcast, Study, LiveStream, ScheduleItem, defaultSchedules } from "@/lib/db";
+import { DbData, EventItem, Sermon, Podcast, Study, LiveStream, ScheduleItem, VisitStats, defaultSchedules } from "@/lib/db";
 import { 
   getDbDataClient, 
   getCachedDbData,
@@ -15,13 +15,14 @@ import {
   addGalleryPhotoClient, 
   deleteGalleryPhotoClient, 
   toggleMessageReadClient, 
-  deleteMessageClient 
+  deleteMessageClient,
+  updateVisitStatsClient
 } from "@/lib/firestoreClient";
 import { triggerPdfDownload } from "@/lib/pdfHelper";
 import { getYouTubeEmbedUrl, cleanStreamUrl, getHeroVideoInfo } from "@/lib/youtube";
 import StreamPlayer from "@/components/StreamPlayer";
 
-type TabType = "verse" | "schedules" | "events" | "sermons" | "podcasts" | "studies" | "gallery" | "messages" | "livestream" | "herovideo";
+type TabType = "verse" | "schedules" | "events" | "sermons" | "podcasts" | "studies" | "gallery" | "messages" | "livestream" | "herovideo" | "stats";
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -511,12 +512,81 @@ export default function AdminPage() {
           </div>
         )}
 
+        {/* RESUMEN RÁPIDO DEL CONTADOR DE VISITAS */}
+        {(() => {
+          const stats: VisitStats = dbData?.visitStats || { totalVisits: 0, uniqueVisitors: 0, daily: {} };
+          const daily = stats.daily || {};
+          const todayVisits = daily[today] || 0;
+
+          let weekVisits = 0;
+          for (let i = 0; i < 7; i++) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            const k = d.toISOString().split("T")[0];
+            weekVisits += daily[k] || 0;
+          }
+
+          const currentMonthPrefix = today.slice(0, 7);
+          const monthVisits = Object.entries(daily).reduce((acc, [dateKey, count]) => {
+            return dateKey.startsWith(currentMonthPrefix) ? acc + (Number(count) || 0) : acc;
+          }, 0);
+
+          const totalVisits = Math.max(stats.totalVisits || 0, monthVisits, todayVisits);
+          const uniqueVisitors = Math.max(stats.uniqueVisitors || 0, totalVisits > 0 ? 1 : 0);
+
+          return (
+            <div className="mb-8 bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-blue-50 border border-blue-200 text-tierra flex items-center justify-center text-xl shrink-0">
+                  📊
+                </div>
+                <div>
+                  <h2 className="font-display font-bold text-slate-900 text-sm sm:text-base">
+                    Contador de Visitas del Sitio Web
+                  </h2>
+                  <p className="text-xs text-slate-500">
+                    Seguimiento automático de ingresos a la página principal
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 flex-1 max-w-2xl">
+                <div className="bg-slate-50 border border-slate-200/80 rounded-xl px-3.5 py-2.5 text-center">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">Hoy</span>
+                  <span className="font-display text-xl font-extrabold text-tierra">{todayVisits}</span>
+                </div>
+                <div className="bg-slate-50 border border-slate-200/80 rounded-xl px-3.5 py-2.5 text-center">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">7 Días</span>
+                  <span className="font-display text-xl font-extrabold text-slate-800">{weekVisits}</span>
+                </div>
+                <div className="bg-slate-50 border border-slate-200/80 rounded-xl px-3.5 py-2.5 text-center">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">Este Mes</span>
+                  <span className="font-display text-xl font-extrabold text-slate-800">{monthVisits}</span>
+                </div>
+                <div className="bg-blue-50/70 border border-blue-200 rounded-xl px-3.5 py-2.5 text-center">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-tierra block">Total ({uniqueVisitors} únicos)</span>
+                  <span className="font-display text-xl font-extrabold text-tierra">{totalVisits}</span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab("stats")}
+                className="text-xs font-bold text-tierra hover:text-white bg-blue-50 hover:bg-tierra border border-blue-200 px-4 py-2.5 rounded-xl transition-all shrink-0 cursor-pointer"
+              >
+                Ver Detalle →
+              </button>
+            </div>
+          );
+        })()}
+
         {/* Layout Tabs / Controles */}
         <div className="grid md:grid-cols-12 gap-8 items-start">
           
           {/* Sidebar Menú Tabs */}
           <div className="md:col-span-3 flex flex-col gap-2 bg-white rounded-2xl p-3 border border-slate-200 shadow-sm">
             {[
+              { id: "stats", label: "📊 Contador de Visitas" },
               { 
                 id: "livestream", 
                 label: `🔴 Streaming en Vivo${liveStreamForm.active ? " (ACTIVO)" : ""}` 
@@ -1092,8 +1162,8 @@ export default function AdminPage() {
                     const sortedEvents = [...(dbData?.events || [])].sort((a, b) => {
                       const timeA = new Date(a.date).getTime() || 0;
                       const timeB = new Date(b.date).getTime() || 0;
-                      if (timeB !== timeA) return timeB - timeA;
-                      return (b.id || "").localeCompare(a.id || "");
+                      if (timeA !== timeB) return timeA - timeB;
+                      return (a.id || "").localeCompare(b.id || "");
                     });
 
                     if (sortedEvents.length === 0) {
@@ -1795,6 +1865,201 @@ export default function AdminPage() {
                 </div>
               </div>
             )}
+
+            {/* TAB: ESTADÍSTICAS Y CONTADOR DE VISITAS */}
+            {activeTab === "stats" && (() => {
+              const stats: VisitStats = dbData?.visitStats || { totalVisits: 0, uniqueVisitors: 0, daily: {} };
+              const daily = stats.daily || {};
+              const todayVisits = daily[today] || 0;
+
+              const yesterdayDate = new Date();
+              yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+              const yesterdayKey = yesterdayDate.toISOString().split("T")[0];
+              const yesterdayVisits = daily[yesterdayKey] || 0;
+
+              const last14Days: { dateKey: string; label: string; count: number }[] = [];
+              let weekVisits = 0;
+              for (let i = 13; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const k = d.toISOString().split("T")[0];
+                const c = Number(daily[k]) || 0;
+                if (i < 7) weekVisits += c;
+                const [, m, day] = k.split("-");
+                last14Days.push({
+                  dateKey: k,
+                  label: `${day}/${m}`,
+                  count: c,
+                });
+              }
+
+              const currentMonthPrefix = today.slice(0, 7);
+              const monthVisits = Object.entries(daily).reduce((acc, [dateKey, count]) => {
+                return dateKey.startsWith(currentMonthPrefix) ? acc + (Number(count) || 0) : acc;
+              }, 0);
+
+              const totalVisits = Math.max(stats.totalVisits || 0, monthVisits, todayVisits);
+              const uniqueVisitors = Math.max(stats.uniqueVisitors || 0, totalVisits > 0 ? 1 : 0);
+              const maxDayCount = Math.max(...last14Days.map((d) => d.count), 1);
+
+              const handleSimulateVisit = async () => {
+                const updated: VisitStats = {
+                  totalVisits: totalVisits + 1,
+                  uniqueVisitors: uniqueVisitors === 0 ? 1 : uniqueVisitors,
+                  daily: {
+                    ...daily,
+                    [today]: (daily[today] || 0) + 1,
+                  },
+                  lastUpdated: new Date().toISOString(),
+                };
+                setLoading(true);
+                const ok = await updateVisitStatsClient(updated);
+                if (ok) {
+                  setDbData((prev) => (prev ? { ...prev, visitStats: updated } : prev));
+                  showStatus("success", "Visita registrada correctamente en el contador.");
+                }
+                setLoading(false);
+              };
+
+              const handleResetVisits = async () => {
+                if (!window.confirm("¿Seguro que querés reiniciar el contador de visitas a cero?")) return;
+                const emptyStats: VisitStats = {
+                  totalVisits: 0,
+                  uniqueVisitors: 0,
+                  daily: {},
+                  lastUpdated: new Date().toISOString(),
+                };
+                setLoading(true);
+                const ok = await updateVisitStatsClient(emptyStats);
+                if (ok) {
+                  setDbData((prev) => (prev ? { ...prev, visitStats: emptyStats } : prev));
+                  showStatus("success", "Contador de visitas reiniciado a cero.");
+                }
+                setLoading(false);
+              };
+
+              return (
+                <div className="bg-white rounded-3xl p-8 relative overflow-hidden border border-slate-200 shadow-sm">
+                  <div className="absolute top-0 left-0 w-full h-[3px] bg-tierra" />
+
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                    <div>
+                      <h2 className="font-display text-xl font-bold text-slate-900">
+                        📊 Estadísticas y Contador de Visitas
+                      </h2>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Registro de ingresos a la página web en entorno local y en el servidor Ferozo.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        disabled={loading}
+                        onClick={async () => {
+                          setLoading(true);
+                          const fresh = await getDbDataClient();
+                          if (fresh) setDbData(fresh);
+                          setLoading(false);
+                          showStatus("success", "Estadísticas actualizadas.");
+                        }}
+                        className="text-xs font-bold text-slate-700 hover:text-tierra bg-slate-100 hover:bg-blue-50 border border-slate-200 px-3.5 py-2 rounded-xl transition-all cursor-pointer"
+                      >
+                        🔄 Actualizar
+                      </button>
+                      <button
+                        type="button"
+                        disabled={loading}
+                        onClick={handleSimulateVisit}
+                        className="text-xs font-bold text-tierra hover:text-white bg-blue-50 hover:bg-tierra border border-blue-200 px-3.5 py-2 rounded-xl transition-all cursor-pointer"
+                      >
+                        ➕ Probar +1 Visita
+                      </button>
+                      <button
+                        type="button"
+                        disabled={loading}
+                        onClick={handleResetVisits}
+                        className="text-xs font-bold text-red-600 hover:text-white bg-red-50 hover:bg-red-600 border border-red-200 px-3.5 py-2 rounded-xl transition-all cursor-pointer"
+                      >
+                        🗑️ Reiniciar
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Tarjetas principales */}
+                  <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">Visitas Hoy</span>
+                      <span className="font-display text-3xl font-extrabold text-tierra mt-1 block">{todayVisits}</span>
+                      <span className="text-[11px] text-slate-400">{formatDisplayDate(today)}</span>
+                    </div>
+                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">Ayer</span>
+                      <span className="font-display text-3xl font-extrabold text-slate-800 mt-1 block">{yesterdayVisits}</span>
+                      <span className="text-[11px] text-slate-400">{formatDisplayDate(yesterdayKey)}</span>
+                    </div>
+                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">Últimos 7 Días</span>
+                      <span className="font-display text-3xl font-extrabold text-slate-800 mt-1 block">{weekVisits}</span>
+                      <span className="text-[11px] text-slate-400">Acumulado semanal</span>
+                    </div>
+                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">Este Mes</span>
+                      <span className="font-display text-3xl font-extrabold text-slate-800 mt-1 block">{monthVisits}</span>
+                      <span className="text-[11px] text-slate-400">Mes en curso</span>
+                    </div>
+                    <div className="bg-blue-50/70 border border-blue-200 rounded-2xl p-4 col-span-2 lg:col-span-1">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-tierra block">Total Histórico</span>
+                      <span className="font-display text-3xl font-extrabold text-tierra mt-1 block">{totalVisits}</span>
+                      <span className="text-[11px] text-tierra/80 font-semibold">👤 {uniqueVisitors} visitantes únicos</span>
+                    </div>
+                  </div>
+
+                  {/* Gráfico de barras de los últimos 14 días */}
+                  <div className="border border-slate-200 rounded-2xl p-6 bg-slate-50/50">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="font-display font-bold text-slate-800 text-sm uppercase tracking-wider">
+                         Evolución Diaria (Últimos 14 días)
+                      </h3>
+                      {stats.lastUpdated && (
+                        <span className="text-[11px] text-slate-500">
+                          Último registro: {new Date(stats.lastUpdated).toLocaleString("es-AR")}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-7 sm:grid-cols-14 gap-2 items-end h-44 pt-6 border-b border-slate-200 pb-2">
+                      {last14Days.map((item) => {
+                        const heightPct = item.count > 0 ? Math.max(12, Math.round((item.count / maxDayCount) * 100)) : 4;
+                        const isToday = item.dateKey === today;
+                        return (
+                          <div key={item.dateKey} className="flex flex-col items-center justify-end h-full gap-1.5">
+                            <span className={`text-[10px] font-bold ${item.count > 0 ? "text-slate-800" : "text-slate-400"}`}>
+                              {item.count}
+                            </span>
+                            <div className="w-full flex items-end justify-center h-28 bg-slate-200/50 rounded-lg overflow-hidden p-0.5">
+                              <div
+                                style={{ height: `${heightPct}%` }}
+                                className={`w-full rounded-md transition-all duration-300 ${
+                                  isToday
+                                    ? "bg-tierra"
+                                    : item.count > 0
+                                      ? "bg-sky-500"
+                                      : "bg-slate-300"
+                                }`}
+                              />
+                            </div>
+                            <span className={`text-[10px] ${isToday ? "font-extrabold text-tierra" : "text-slate-500"}`}>
+                              {item.label}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
           </div>
         </div>

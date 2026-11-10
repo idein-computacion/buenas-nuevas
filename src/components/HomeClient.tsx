@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { DbData, EventItem, Sermon, Podcast, Study, ScheduleItem, defaultSchedules } from "@/lib/db";
-import { getDbDataClient, submitMessageClient, subscribeToLiveStreamClient } from "@/lib/apiClient";
+import { getDbDataClient, submitMessageClient, subscribeToLiveStreamClient, recordPageVisitClient } from "@/lib/apiClient";
 import { triggerPdfDownload } from "@/lib/pdfHelper";
 import { 
   getYouTubeEmbedUrl, 
@@ -32,18 +32,18 @@ export default function HomeClient({ initialData }: HomeClientProps) {
   const domingoSchedule = currentSchedules.find(s => s.dia?.toLowerCase().includes("domingo"));
   const heroVideoInfo = getHeroVideoInfo(data.heroVideo);
 
-  const communityPhotos = [
-    "/galeria/comunidad-1.jpg",
-    "/galeria/comunidad-2.jpg",
-    "/galeria/comunidad-3.jpg",
-    "/galeria/comunidad-4.jpg",
-    "/galeria/comunidad-5.jpg",
-    "/galeria/comunidad-6.jpg",
-    "/galeria/pastor-pablo.jpg"
-  ];
-  const galleryList: string[] = (data.gallery && data.gallery.length > 0 && !data.gallery[0]?.includes('/uploads/'))
-    ? data.gallery
-    : communityPhotos;
+  const galleryList: string[] = Array.isArray(data.gallery)
+    ? data.gallery.filter((url: string) => !url.includes('/galeria/comunidad-') && !url.includes('/galeria/pastor-pablo.jpg'))
+    : [];
+
+  const getOptimizedImageUrl = (url?: string, width = 240) => {
+    if (!url) return "";
+    if (!url.startsWith("/uploads/")) return url;
+    if (process.env.NODE_ENV === "development") {
+      return url;
+    }
+    return `/api.php?thumb=${encodeURIComponent(url)}&w=${width}`;
+  };
 
   // Autoplay for photo gallery carousel
   useEffect(() => {
@@ -52,7 +52,7 @@ export default function HomeClient({ initialData }: HomeClientProps) {
       setGallerySlide((prev) => (prev + 1) % galleryList.length);
     }, 4500);
     return () => clearInterval(interval);
-  }, [galleryList, isGalleryPaused]);
+  }, [galleryList.length, isGalleryPaused]);
 
   const handleNextPhoto = () => {
     if (!galleryList || galleryList.length === 0) return;
@@ -320,6 +320,8 @@ export default function HomeClient({ initialData }: HomeClientProps) {
 
   // Load fresh Firestore data on client mount and subscribe to realtime livestream
   useEffect(() => {
+    recordPageVisitClient();
+
     getDbDataClient().then((freshData) => {
       if (freshData) {
         if (!freshData.schedules || freshData.schedules.length === 0) {
@@ -466,6 +468,7 @@ export default function HomeClient({ initialData }: HomeClientProps) {
               loop
               muted
               playsInline
+              preload="metadata"
               key={heroVideoInfo.url}
               className="w-full h-full object-cover filter brightness-75 contrast-110"
             />
@@ -480,6 +483,8 @@ export default function HomeClient({ initialData }: HomeClientProps) {
             <img 
               src="/logo-white.png" 
               alt="Logo Iglesia Buenas Nuevas" 
+              fetchPriority="high"
+              decoding="async"
               className="w-full h-auto object-contain filter drop-shadow-[0_10px_25px_rgba(0,0,0,0.6)] hover:scale-105 transition-transform duration-500"
             />
           </div>
@@ -536,8 +541,8 @@ export default function HomeClient({ initialData }: HomeClientProps) {
             <img src="/social-maps.png" alt="Map" className="w-4.5 h-4.5 object-contain brightness-200" /> Calle Mensú 1177, Oberá
           </span>
           <span className="text-white/40 hidden md:inline">|</span>
-          <a href="tel:+543755629896" className="flex items-center gap-2 justify-center hover:text-sky-200 transition-colors">
-            📞 Tel: 3755 629896
+          <a href="tel:+543755629698" className="flex items-center gap-2 justify-center hover:text-sky-200 transition-colors">
+            📞 Tel: 3755 629698
           </a>
           <span className="text-white/40 hidden md:inline">|</span>
           <span className="flex items-center gap-2.5 justify-center">
@@ -676,8 +681,8 @@ export default function HomeClient({ initialData }: HomeClientProps) {
               const sortedEvents = [...(data.events || [])].sort((a, b) => {
                 const timeA = new Date(a.date).getTime() || 0;
                 const timeB = new Date(b.date).getTime() || 0;
-                if (timeB !== timeA) return timeB - timeA;
-                return (b.id || "").localeCompare(a.id || "");
+                if (timeA !== timeB) return timeA - timeB;
+                return (a.id || "").localeCompare(b.id || "");
               });
 
               if (sortedEvents.length === 0) {
@@ -711,8 +716,10 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                             {event.imageUrl ? (
                               <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 shadow-xs border border-slate-200 bg-slate-100">
                                 <img
-                                  src={event.imageUrl}
+                                  src={getOptimizedImageUrl(event.imageUrl, 240)}
                                   alt={event.title}
+                                  loading="lazy"
+                                  decoding="async"
                                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                 />
                               </div>
@@ -766,7 +773,7 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                 <span>💬 CONSULTAR POR ACTIVIDADES</span>
               </a>
               <a
-                href="https://wa.me/543755629896?text=Hola!%20Quisiera%20consultar%20sobre%20las%20próximas%20actividades"
+                href="https://wa.me/543755629698?text=Hola!%20Quisiera%20consultar%20sobre%20las%20próximas%20actividades"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full sm:w-auto min-w-[180px] bg-white hover:bg-slate-50 text-tierra border-2 border-tierra font-bold text-xs uppercase tracking-wider py-3.5 px-6 rounded-lg shadow-xs hover:shadow transition-all duration-200 text-center flex items-center justify-center gap-2"
@@ -857,6 +864,7 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                   <iframe
                     src={YOUTUBE_PLAYLIST_EMBED_URL}
                     title="Últimas prédicas y mensajes - Canal Oficial"
+                    loading="lazy"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                     className="w-full h-full border-0"
@@ -943,6 +951,8 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                         <img 
                           src={getYouTubeThumbnail(data.liveStream.streamUrl)!} 
                           alt="Transmisión en vivo" 
+                          loading="lazy"
+                          decoding="async"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
                         />
                       ) : (
@@ -950,6 +960,8 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                           <img 
                             src="/logo-white.png" 
                             alt="Transmisión en vivo" 
+                            loading="lazy"
+                            decoding="async"
                             className="w-24 h-24 object-contain filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] opacity-85 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
                           />
                         </div>
@@ -1015,6 +1027,8 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                       <img 
                         src={getYouTubeThumbnail(sermon.videoUrl)!} 
                         alt={sermon.title} 
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
                       />
                     ) : null}
@@ -1104,6 +1118,7 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                         <audio 
                           src={pod.audioUrl} 
                           controls 
+                          preload="none"
                           className="w-full h-8 opacity-90 focus:opacity-100 hover:opacity-100 transition-opacity" 
                         />
                         <span className="text-[10px] text-slate-400 mt-2 block text-right font-bold uppercase tracking-wider">
@@ -1189,8 +1204,8 @@ export default function HomeClient({ initialData }: HomeClientProps) {
           </div>
 
           {galleryList.length === 0 ? (
-            <div className="border border-dashed border-slate-300 rounded-2xl p-10 text-center text-sm text-slate-500">
-              La galería de fotos está vacía.
+            <div className="border border-dashed border-slate-300 rounded-2xl p-10 text-center text-sm text-slate-500 max-w-xl mx-auto bg-white/60">
+              Próximamente compartiremos las fotos de nuestras actividades y reuniones. Podés administrarlas desde el panel.
             </div>
           ) : (
             <div 
@@ -1205,31 +1220,47 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                   className="flex h-full w-full transition-transform duration-700 ease-out"
                   style={{ transform: `translateX(-${gallerySlide * 100}%)` }}
                 >
-                  {galleryList.map((photo, idx) => (
-                    <div
-                      key={idx}
-                      className="relative h-full w-full shrink-0 flex items-center justify-center overflow-hidden"
-                    >
-                      {/* Fondo ambiental desenfocado con los tonos de la imagen */}
-                      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                        <img
-                          src={photo}
-                          alt=""
-                          aria-hidden="true"
-                          className="w-full h-full object-cover blur-2xl scale-125 opacity-35 filter brightness-75 select-none"
-                        />
-                      </div>
+                  {galleryList.map((photo, idx) => {
+                    const total = galleryList.length;
+                    const isVisibleOrAdjacent =
+                      idx === gallerySlide ||
+                      idx === (gallerySlide + 1) % total ||
+                      idx === (gallerySlide - 1 + total) % total;
 
-                      {/* Imagen principal: 100% visible en su totalidad sin ningún recorte */}
-                      <div className="relative w-full h-full flex items-center justify-center p-3 sm:p-6 z-10">
-                        <img
-                          src={photo}
-                          alt={`Comunidad Buenas Nuevas - Foto ${idx + 1}`}
-                          className="max-h-full max-w-full w-auto h-auto object-contain rounded-2xl shadow-2xl select-none"
-                        />
+                    return (
+                      <div
+                        key={idx}
+                        className="relative h-full w-full shrink-0 flex items-center justify-center overflow-hidden"
+                      >
+                        {isVisibleOrAdjacent && (
+                          <>
+                            {/* Fondo ambiental desenfocado con los tonos de la imagen */}
+                            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                              <img
+                                src={getOptimizedImageUrl(photo, 240)}
+                                alt=""
+                                aria-hidden="true"
+                                loading="lazy"
+                                decoding="async"
+                                className="w-full h-full object-cover blur-2xl scale-125 opacity-35 filter brightness-75 select-none"
+                              />
+                            </div>
+
+                            {/* Imagen principal: 100% visible en su totalidad sin ningún recorte */}
+                            <div className="relative w-full h-full flex items-center justify-center p-3 sm:p-6 z-10">
+                              <img
+                                src={getOptimizedImageUrl(photo, 1280)}
+                                alt={`Comunidad Buenas Nuevas - Foto ${idx + 1}`}
+                                loading="lazy"
+                                decoding="async"
+                                className="max-h-full max-w-full w-auto h-auto object-contain rounded-2xl shadow-2xl select-none"
+                              />
+                            </div>
+                          </>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
                 
                 {/* Overlay sutil con gradiente para indicadores */}
@@ -1286,8 +1317,10 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                       }`}
                     >
                       <img
-                        src={photo}
+                        src={getOptimizedImageUrl(photo, 200)}
                         alt={`Miniatura ${idx + 1}`}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover"
                       />
                     </button>
@@ -1339,7 +1372,7 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                   <span>Calle Mensú 1177, Oberá, Misiones, Argentina</span>
                 </div>
                 <a 
-                  href="https://wa.me/5493755629896"
+                  href="https://wa.me/5493755629698"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 text-slate-700 hover:text-tierra transition-colors font-medium"
@@ -1347,7 +1380,7 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                   <span className="text-tierra flex items-center justify-center w-5 h-5">
                     <img src="/social-wa.png" alt="WhatsApp" className="w-5 h-5 object-contain" />
                   </span>
-                  <span>WhatsApp: +54 9 3755 629896</span>
+                  <span>WhatsApp: +54 9 3755 629698</span>
                 </a>
                 <div className="flex items-center gap-3 text-slate-700">
                   <span className="text-tierra">✉️</span>
@@ -1556,7 +1589,7 @@ export default function HomeClient({ initialData }: HomeClientProps) {
 
             <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-100">
               <a
-                href={`https://wa.me/543755629896?text=${encodeURIComponent("Hola! Quisiera más información sobre la actividad: " + selectedEvent.title)}`}
+                href={`https://wa.me/543755629698?text=${encodeURIComponent("Hola! Quisiera más información sobre la actividad: " + selectedEvent.title)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-tierra hover:bg-tierra-dark text-white text-xs font-bold uppercase tracking-wider px-6 py-3 rounded-full transition-all shadow-md hover:shadow-lg flex items-center gap-2"

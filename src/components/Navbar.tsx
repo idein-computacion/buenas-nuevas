@@ -15,8 +15,16 @@ const LINKS = [
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [isLive, setIsLive] = useState<boolean>(false);
+  const [isScrolled, setIsScrolled] = useState<boolean>(false);
 
   useEffect(() => {
+    // 0. Scroll detection for transparency
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
     // 1. Initial check from fast cache
     const cached = getCachedDbData();
     if (cached?.liveStream) {
@@ -39,6 +47,7 @@ export default function Navbar() {
     window.addEventListener("livestream-updated", handleLocalUpdate);
 
     return () => {
+      window.removeEventListener("scroll", handleScroll);
       unsubscribe();
       window.removeEventListener("livestream-updated", handleLocalUpdate);
     };
@@ -52,7 +61,13 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-gradient-to-r from-[#072B61] via-[#09428F] to-[#0B54B8] text-white shadow-lg border-b border-[#072B61]">
+    <header
+      className={`sticky top-0 z-50 text-white transition-all duration-300 ${
+        isScrolled && !open
+          ? "bg-[#09428F]/50 backdrop-blur-md shadow-lg border-b border-white/15"
+          : "bg-[#09428F] shadow-md border-b border-transparent"
+      }`}
+    >
       <nav className="mx-auto max-w-6xl px-6 py-3.5 flex items-center justify-between">
         {/* LOGO */}
         <Link href="/" className="flex items-center gap-3 group">
@@ -152,7 +167,7 @@ export default function Navbar() {
 
       {/* MOBILE MENU */}
       {open && (
-        <div className="md:hidden px-6 pb-6 flex flex-col gap-3.5 border-t border-white/15 pt-4 bg-[#072B61] text-white shadow-xl">
+        <div className="md:hidden px-6 pb-6 flex flex-col gap-3.5 border-t border-white/15 pt-4 bg-[#09428F]/95 backdrop-blur-lg text-white shadow-xl">
           {/* BOTON EN VIVO DESTACADO EN MOVIL */}
           <Link
             href="/#mensajes"
