@@ -111,7 +111,14 @@ export default function Footer() {
           © {new Date().getFullYear()} Iglesia Buenas Nuevas · Oberá, Misiones.
         </div>
         <div>
-          Desarrollado por <a href="https://idein.com.ar" className="text-sky-400 hover:underline" target="_blank" rel="noopener noreferrer">Pedro Turcheñuk - IDeIn Computación - 3754406435</a>
+          Desarrollado por{" "}
+          <a href="https://idein.com.ar" className="text-sky-400 hover:underline" target="_blank" rel="noopener noreferrer">
+            Pedro Turcheñuk - IDeIn Computación
+          </a>{" "}
+          -{" "}
+          <a href="https://wa.me/5493754406435" className="text-sky-400 hover:underline" target="_blank" rel="noopener noreferrer" title="Contactar por WhatsApp">
+            3754406435
+          </a>
         </div>
       </div>
     </footer>

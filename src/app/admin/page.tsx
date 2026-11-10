@@ -15,8 +15,7 @@ import {
   addGalleryPhotoClient, 
   deleteGalleryPhotoClient, 
   toggleMessageReadClient, 
-  deleteMessageClient,
-  updateVisitStatsClient
+  deleteMessageClient 
 } from "@/lib/firestoreClient";
 import { triggerPdfDownload } from "@/lib/pdfHelper";
 import { getYouTubeEmbedUrl, cleanStreamUrl, getHeroVideoInfo } from "@/lib/youtube";
@@ -1902,88 +1901,17 @@ export default function AdminPage() {
               const uniqueVisitors = Math.max(stats.uniqueVisitors || 0, totalVisits > 0 ? 1 : 0);
               const maxDayCount = Math.max(...last14Days.map((d) => d.count), 1);
 
-              const handleSimulateVisit = async () => {
-                const updated: VisitStats = {
-                  totalVisits: totalVisits + 1,
-                  uniqueVisitors: uniqueVisitors === 0 ? 1 : uniqueVisitors,
-                  daily: {
-                    ...daily,
-                    [today]: (daily[today] || 0) + 1,
-                  },
-                  lastUpdated: new Date().toISOString(),
-                };
-                setLoading(true);
-                const ok = await updateVisitStatsClient(updated);
-                if (ok) {
-                  setDbData((prev) => (prev ? { ...prev, visitStats: updated } : prev));
-                  showStatus("success", "Visita registrada correctamente en el contador.");
-                }
-                setLoading(false);
-              };
-
-              const handleResetVisits = async () => {
-                if (!window.confirm("¿Seguro que querés reiniciar el contador de visitas a cero?")) return;
-                const emptyStats: VisitStats = {
-                  totalVisits: 0,
-                  uniqueVisitors: 0,
-                  daily: {},
-                  lastUpdated: new Date().toISOString(),
-                };
-                setLoading(true);
-                const ok = await updateVisitStatsClient(emptyStats);
-                if (ok) {
-                  setDbData((prev) => (prev ? { ...prev, visitStats: emptyStats } : prev));
-                  showStatus("success", "Contador de visitas reiniciado a cero.");
-                }
-                setLoading(false);
-              };
-
               return (
                 <div className="bg-white rounded-3xl p-8 relative overflow-hidden border border-slate-200 shadow-sm">
                   <div className="absolute top-0 left-0 w-full h-[3px] bg-tierra" />
 
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-                    <div>
-                      <h2 className="font-display text-xl font-bold text-slate-900">
-                        📊 Estadísticas y Contador de Visitas
-                      </h2>
-                      <p className="text-xs text-slate-500 mt-1">
-                        Registro de ingresos a la página web en entorno local y en el servidor Ferozo.
-                      </p>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-2">
-                      <button
-                        type="button"
-                        disabled={loading}
-                        onClick={async () => {
-                          setLoading(true);
-                          const fresh = await getDbDataClient();
-                          if (fresh) setDbData(fresh);
-                          setLoading(false);
-                          showStatus("success", "Estadísticas actualizadas.");
-                        }}
-                        className="text-xs font-bold text-slate-700 hover:text-tierra bg-slate-100 hover:bg-blue-50 border border-slate-200 px-3.5 py-2 rounded-xl transition-all cursor-pointer"
-                      >
-                        🔄 Actualizar
-                      </button>
-                      <button
-                        type="button"
-                        disabled={loading}
-                        onClick={handleSimulateVisit}
-                        className="text-xs font-bold text-tierra hover:text-white bg-blue-50 hover:bg-tierra border border-blue-200 px-3.5 py-2 rounded-xl transition-all cursor-pointer"
-                      >
-                        ➕ Probar +1 Visita
-                      </button>
-                      <button
-                        type="button"
-                        disabled={loading}
-                        onClick={handleResetVisits}
-                        className="text-xs font-bold text-red-600 hover:text-white bg-red-50 hover:bg-red-600 border border-red-200 px-3.5 py-2 rounded-xl transition-all cursor-pointer"
-                      >
-                        🗑️ Reiniciar
-                      </button>
-                    </div>
+                  <div className="mb-8">
+                    <h2 className="font-display text-xl font-bold text-slate-900">
+                      📊 Estadísticas y Contador de Visitas
+                    </h2>
+                    <p className="text-xs text-slate-500 mt-1">
+                      Registro automático de ingresos a la página web.
+                    </p>
                   </div>
 
                   {/* Tarjetas principales */}
